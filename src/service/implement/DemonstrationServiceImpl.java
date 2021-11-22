@@ -35,17 +35,11 @@ public class DemonstrationServiceImpl implements DemonstrationService {
         System.out.println("Choose:");
         int choice = scanner.nextInt();
         Category userCategory = categories.get(choice-1);
-        //int indexCounter = 1;
-        List<Integer> prodIds = new ArrayList<>();
-
         for(Map.Entry<Integer, Product> prod : OnlineMarketDemo.products.entrySet()){
             if(categories.contains(userCategory)){
                 System.out.println(prod.getKey() + ". " + prod.getValue().getName());
-                //indexCounter++;
             }
-
         }
-
     }
 
     @Override
