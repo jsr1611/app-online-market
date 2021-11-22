@@ -7,8 +7,7 @@ import service.CategoryService;
 import service.DemonstrationService;
 import service.ProductService;
 
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 /**
  * Author: khamza@nightwell-logistics.com
@@ -18,8 +17,8 @@ import java.util.Scanner;
 public class DemonstrationServiceImpl implements DemonstrationService {
 
     static Scanner scanner;
-    static CategoryService categoryService;
-    static ProductService productService;
+    static CategoryService categoryService = new CategoryServiceImpl();
+    static ProductService productService = new ProductServiceImpl();
 
     @Override
     public void showCustomerMenu() {
@@ -35,6 +34,18 @@ public class DemonstrationServiceImpl implements DemonstrationService {
         System.out.println("=========================================");
         System.out.println("Choose:");
         int choice = scanner.nextInt();
+        Category userCategory = categories.get(choice-1);
+        //int indexCounter = 1;
+        List<Integer> prodIds = new ArrayList<>();
+
+        for(Map.Entry<Integer, Product> prod : OnlineMarketDemo.products.entrySet()){
+            if(categories.contains(userCategory)){
+                System.out.println(prod.getKey() + ". " + prod.getValue().getName());
+                //indexCounter++;
+            }
+
+        }
+
     }
 
     @Override
@@ -42,30 +53,75 @@ public class DemonstrationServiceImpl implements DemonstrationService {
         scanner = new Scanner(System.in);
 
         System.out.println("1. Add Product");
+        // add more menus for salesman
+        // 2. Change Price
+        // 3. Delete Product
+        // 4. ...
         int choice = scanner.nextInt();
-
         /**
          *
-         *      private Long id;
+     *      private Long id;
          *     private String name;
          *     private Category category;
          *     private Category subCategory;
          *     private Double price;
          *
          */
-
+        int innerChoice = 0;
         switch (choice) {
             case 1:
-                System.out.println("Name: ");
+                System.out.print("Name: ");
+                scanner = new Scanner(System.in);
                 String name = scanner.nextLine();
+                Category category =  null;
+                Category subCategory = null;
+                System.out.println("Please, choose a category: ");
+                int index = 1;
+                for(Category cat: OnlineMarketDemo.categories){
+                    System.out.println(index + ". " + cat.getName());
+                    index++;
+                }
+                System.out.println(index + ". New");
+                scanner = new Scanner(System.in);
+                innerChoice = scanner.nextInt();
+                if(innerChoice > OnlineMarketDemo.categories.size()){
+                    System.out.println("---NEW CATEGORY ENTRY---");
+                    scanner = new Scanner(System.in);
+                    System.out.print("Name: ");
+                    String catName = scanner.nextLine();
+                    System.out.println("Description: ");
+                    String catDesc = scanner.nextLine();
+                    Long catId = OnlineMarketDemo.categories.size() + 1L;
+                    category = new Category(catId, catName, catDesc);
+                    categoryService.addCategory(category);
 
-                /*Product product = new Product(
+                }else {
+                    category = OnlineMarketDemo.categories.get(innerChoice-1);
+                }
 
-                )*/
+//                if(OnlineMarketDemo.subCategories.containsKey(category)){
+//                    Collection<Category> subCats = OnlineMarketDemo.subCategories.values();
+//                    index = 1;
+//                    for(Category subCat : subCats){
+//                        System.out.println(index + ". " + subCat.getName());
+//                        index++;
+//                    }
+//                    System.out.println(index + ". New");
+//
+//                }
+                System.out.print("Price: ");
+                Double price = scanner.nextDouble();
+                Long prodId = OnlineMarketDemo.products.size()+1L;
+                Product product = new Product(
+                        prodId,
+                        name,
+                        category,
+                        null,
+                        price
+                );
 
-                //productService.addProduct()
+                productService.addProduct(product);
         }
-
 
     }
 

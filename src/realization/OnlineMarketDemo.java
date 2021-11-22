@@ -15,10 +15,11 @@ import java.util.*;
  * Time: 7:19 PM
  */
 public class OnlineMarketDemo {
-    public static Scanner scanner = new Scanner(System.in);
 
+    public static Scanner scanner = new Scanner(System.in);
     public static Set<User> users = new HashSet<>();                        // DONE
     public static List<Category> categories = new ArrayList<>();
+    public static Map<Category, Category> subCategories = new HashMap<>();
     public static Map<Integer, Product> products = new HashMap<>();
 
     /**

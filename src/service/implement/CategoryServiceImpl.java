@@ -1,6 +1,7 @@
 package service.implement;
 
 import model.Category;
+import realization.OnlineMarketDemo;
 import service.CategoryService;
 
 /**
@@ -15,6 +16,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public boolean addCategory(Category category) {
+        if(!OnlineMarketDemo.categories.contains(category)){
+            OnlineMarketDemo.categories.add(category);
+            return true;
+        }
         return false;
     }
 

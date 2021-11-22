@@ -1,6 +1,7 @@
 package service.implement;
 
 import model.Product;
+import realization.OnlineMarketDemo;
 import service.ProductService;
 
 /**
@@ -12,17 +13,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean addProduct(Product product) {
-
-        return false;
+        if(OnlineMarketDemo.products.containsValue(product)){
+            return false;
+        }
+        Integer key = OnlineMarketDemo.products.size()+1;
+        OnlineMarketDemo.products.put(key, product);
+        return true;
     }
 
     @Override
     public boolean editProduct(Product product) {
+        System.out.println("Not implemented yet");
         return false;
     }
 
     @Override
     public boolean deleteProduct(Long id) {
+        if(OnlineMarketDemo.products.containsKey(id)){
+            OnlineMarketDemo.products.remove(id);
+            return true;
+        }
         return false;
     }
 }
