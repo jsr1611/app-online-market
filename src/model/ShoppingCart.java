@@ -1,5 +1,10 @@
 package model;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Author: khamza@nightwell-logistics.com
  * Date: 11/20/2021
@@ -8,13 +13,13 @@ package model;
 public class ShoppingCart {
 
     private Long id;
-    private Product product;
-    private Integer qty;
+    private Map<Product, Integer> products;
+    private Double totalAmount;
 
-    public ShoppingCart(Long id, Product product, Integer qty) {
+    public ShoppingCart(Long id) {
         this.id = id;
-        this.product = product;
-        this.qty = qty;
+        this.products = new HashMap<>();
+        totalAmount = 0.0;
     }
 
     public Long getId() {
@@ -25,28 +30,45 @@ public class ShoppingCart {
         this.id = id;
     }
 
-    public Product getProduct() {
-        return product;
+    public Map<Product, Integer> getProducts() {
+        return products;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setProducts(Map<Product, Integer> products) {
+        this.products = products;
     }
 
-    public Integer getQty() {
-        return qty;
+    public Double getTotalAmount() {
+        return totalAmount;
     }
 
-    public void setQty(Integer qty) {
-        this.qty = qty;
+    public void setTotalAmount(Double totalAmount) {
+        this.totalAmount = totalAmount;
     }
+    public void addProduct(Product product, Integer qtyToAdd){
+        if(products.containsKey(product)) {
+            products.forEach((prod, qty) -> {
+                if (prod.equals(product)) {
+                    qty += qtyToAdd;
+                }
+            });
+        }
+        else {
+            products.put(product, qtyToAdd);
+        }
+        System.out.println("Product was successfully added to the cart.");
+    }
+
 
     @Override
     public String toString() {
-        return "ShoppingCart{" +
-                "id=" + id +
-                ", product=" + product +
-                ", qty=" + qty +
-                '}';
+        StringBuilder prods = new StringBuilder();
+        for (Map.Entry<Product, Integer> productIntegerEntry : products.entrySet()) {
+            prods.append(productIntegerEntry.getKey().getName()).append(", quantity: ").append(productIntegerEntry.getValue().toString()).append("\n");
+        }
+
+        return "Id: " + id +
+                ", \nproducts: " +  prods +
+                ", \ntotalAmount: " + totalAmount;
     }
 }

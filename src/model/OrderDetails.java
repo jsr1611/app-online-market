@@ -1,5 +1,9 @@
 package model;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Author: khamza@nightwell-logistics.com
  * Date: 11/20/2021
@@ -9,16 +13,12 @@ public class OrderDetails {
 
     private Long id;
     private Order order;
-    private Product product;
-    private Integer productQty;
-    private Double price;
+    private Map<Product, Integer> products;
 
-    public OrderDetails(Long id, Order order, Product product, Integer productQty, Double price) {
+    public OrderDetails(Long id, Order order, Map<Product, Integer> products){
         this.id = id;
         this.order = order;
-        this.product = product;
-        this.productQty = productQty;
-        this.price = price;
+        this.products = products;
     }
 
     public Long getId() {
@@ -37,39 +37,37 @@ public class OrderDetails {
         this.order = order;
     }
 
-    public Product getProduct() {
-        return product;
+    public Map<Product, Integer> getProducts(){
+        return products;
     }
 
-    public void setProduct(Product product) {
-        this.product = product;
+    public void setProducts(Map<Product, Integer> products) {
+        this.products = products;
     }
 
-    public Integer getProductQty() {
-        return productQty;
-    }
-
-    public void setProductQty(Integer productQty) {
-        this.productQty = productQty;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
 
     @Override
     public String toString() {
-        return "OrderDetails{" +
-                "id=" + id +
-                ", order=" + order +
-                ", product=" + product +
-                ", productQty=" + productQty +
-                ", price=" + price +
-                '}';
+        StringBuilder prods = new StringBuilder();
+        int counter = 0;
+        Set<Map.Entry<Product, Integer>> entries = products.entrySet();
+        for(Map.Entry<Product, Integer> prod: products.entrySet()){
+                prods.append(counter++)
+                        .append(". ")
+                        .append("\t")
+                        .append("Order " +  order.getId())
+                        .append("\t")
+                        .append(prod.getKey().getName())
+                        .append("\t")
+                        .append(prod.getValue())
+                        .append("\t")
+                        .append(prod.getKey().getPrice() * prod.getValue())
+                        .append("\n");
+        }
+        return "Order details\n" +
+                "Id: " + id +
+                "\n" + order +
+                "\n" + prods;
     }
 
     /*

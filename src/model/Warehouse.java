@@ -59,12 +59,10 @@ public class Warehouse {
 
     @Override
     public String toString() {
-        return "Warehouse{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", number=" + number +
-                ", products=" + products +
-                '}';
+        return "Id: " + id +
+                ", name: " + name  +
+                ", number: " + number +
+                ", products: " + products;
     }
 
     /* public static void main(String[] args) {

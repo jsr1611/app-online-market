@@ -56,11 +56,10 @@ public class Order {
 
     @Override
     public String toString() {
-        return "Order{" +
-                "id=" + id +
-                ", customer=" + customer +
-                ", orderStatus=" + orderStatus +
-                ", totalPrice=" + totalPrice +
-                '}';
+        return "Order\n" +
+                "Id: " + id +
+                ", customer: " + customer.getEmail() +
+                ", orderStatus: " + orderStatus +
+                ", totalPrice: " + totalPrice;
     }
 }

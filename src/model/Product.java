@@ -67,12 +67,9 @@ public class Product {
 
     @Override
     public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", category=" + category +
-                ", subCategory=" + subCategory +
-                ", price=" + price +
-                '}';
+        return name +
+                ", category: " + (category != null ? category.getName() : "no category") +
+                ", subCategory: " + (subCategory != null ? subCategory.getName() : "no subcategory") +
+                ", price: " + price;
     }
 }

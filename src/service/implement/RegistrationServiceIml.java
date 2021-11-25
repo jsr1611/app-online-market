@@ -1,6 +1,7 @@
 package service.implement;
 
 import enums.Role;
+import model.Account;
 import model.User;
 import realization.OnlineMarketDemo;
 import service.RegistrationService;
@@ -16,20 +17,21 @@ import java.util.Set;
 public class RegistrationServiceIml implements RegistrationService {
 
     public static Scanner scanner;
+    private Long accountNum = 1002110000L;
 
     @Override
     public boolean signUp() {
         scanner = new Scanner(System.in);
-        System.out.println("Fullname: ");
+        System.out.print("Fullname: ");
         String fullname = scanner.nextLine();
 
-        System.out.println("Email: ");
+        System.out.print("Email: ");
         String email = scanner.nextLine();
 
-        System.out.println("Password: ");
+        System.out.print("Password: ");
         String password = scanner.nextLine();
 
-        System.out.println("Choose the role:");
+        System.out.print("Choose the role:");
         int indexOfRole = 1;
         for (Role value : Role.values()) {
             System.out.println(indexOfRole + " " + value);
@@ -37,6 +39,9 @@ public class RegistrationServiceIml implements RegistrationService {
         }
         int roleIndex = scanner.nextInt();
         Role role = Role.values()[roleIndex - 1];
+        System.out.print("Please, enter your account password (4 digits): ");
+        int accountPassword = scanner.nextInt();
+        Account account = new Account(accountNum++, accountPassword);
 
         Set<User> users = OnlineMarketDemo.users;
         int lastId = users.size() + 1;
@@ -46,7 +51,9 @@ public class RegistrationServiceIml implements RegistrationService {
                         fullname,
                         email,
                         password,
-                        role);
+                        role,
+                        account
+                        );
 
         OnlineMarketDemo.users.add(newUser);
         return true;
@@ -55,9 +62,9 @@ public class RegistrationServiceIml implements RegistrationService {
     @Override
     public boolean signIn() {
         scanner = new Scanner(System.in);
-        System.out.println("Email: ");
+        System.out.print("Email: ");
         String email = scanner.next();
-        System.out.println("Password: ");
+        System.out.print("Password: ");
         String password = scanner.next();
 
         for (User user : OnlineMarketDemo.users) {

@@ -1,5 +1,6 @@
 package realization;
 
+import enums.Role;
 import model.*;
 import service.CategoryService;
 import service.DemonstrationService;
@@ -39,6 +40,14 @@ public class OnlineMarketDemo {
 
     public static void main(String[] args) {
 
+        users.add(new User(1L, "Jumanazar Saidov", "js@gmail.com", "js123",
+                Role.CUSTOMER, new Account(1000_11_00001L, 1234)));
+        users.add(new User(2L, "Ali Shermat", "ali@gmail.com", "ali123",
+                Role.SALESMAN, new Account(1000_22_00001L,1122)));
+        users.add(new User(3L, "Jamshid Babajon", "jama@gmail.com", "jama123",
+                Role.DIRECTOR, new Account(1000_33_00001L, 1111)));
+        users.add(new User(4L, "Komil Alimov", "komil@gmail.com","komil123",
+                Role.MANAGER, new Account(1002_33_00002L,2222)));
 
         int choice;
         do {
@@ -71,25 +80,27 @@ public class OnlineMarketDemo {
     private static void signIn() {
         registrationService = new RegistrationServiceIml();
         boolean isSuccess = registrationService.signIn();
+        currentUser.setSignedIn(isSuccess);
         if (isSuccess) {
             demonstrationService = new DemonstrationServiceImpl();
+            while (currentUser.getSignedIn()) {
+                switch (currentUser.getRole()) {
+                    case CUSTOMER:
+                        demonstrationService.showCustomerMenu();
+                        break;
 
-            switch (currentUser.getRole()) {
-                case CUSTOMER:
-                    demonstrationService.showCustomerMenu();
-                    break;
+                    case SALESMAN:
+                        demonstrationService.showSalesmanMenu();
+                        break;
 
-                case SALESMAN:
-                    demonstrationService.showSalesmanMenu();
-                    break;
+                    case MANAGER:
+                        demonstrationService.showManagerMenu();
+                        break;
 
-                case MANAGER:
-                    demonstrationService.showManagerMenu();
-                    break;
-
-                case DIRECTOR:
-                    demonstrationService.showDirectorMenu();
-                    break;
+                    case DIRECTOR:
+                        demonstrationService.showDirectorMenu();
+                        break;
+                }
             }
         } else {
             System.out.println("User not found!");
