@@ -30,6 +30,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public boolean deleteCategory(Long id) {
+        for(Category category : OnlineMarketDemo.categories){
+            if(category.getId().equals(id)){
+                OnlineMarketDemo.categories.remove(category);
+                return true;
+            }
+        }
         return false;
     }
 }

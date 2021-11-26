@@ -112,7 +112,7 @@ public class OrderOperationServiceImpl implements OrderOperationService {
         return paymentStatus;
     }
 
-    private boolean payByCard(PaymentMethod paymentMethod) {
+    public boolean payByCard(PaymentMethod paymentMethod) {
         System.out.println("Your payment method: " + paymentMethod.getCardType());
         System.out.print("Enter first two digits of your card password: ");
         boolean paymentStatus = false;
@@ -132,7 +132,7 @@ public class OrderOperationServiceImpl implements OrderOperationService {
         return paymentStatus;
     }
 
-    private void getNewPaymentMethod(){
+    public void getNewPaymentMethod(){
         Long cardNum;
         Integer month, year;
         String cardHolderName;

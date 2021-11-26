@@ -49,6 +49,7 @@ public class OnlineMarketDemo {
         users.add(new User(4L, "Komil Alimov", "komil@gmail.com","komil123",
                 Role.MANAGER, new Account(1002_33_00002L,2222)));
 
+
         int choice;
         do {
             showMainMenu();

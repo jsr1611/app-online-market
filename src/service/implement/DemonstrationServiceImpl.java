@@ -73,12 +73,12 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                             break;
                         case "v":
                             System.out.println(mycart);
-                            System.out.print("Complete the payment? Enter 'Y' for 'yes', any other word for 'no': ");
+                            System.out.print("Complete the payment? Enter 'Y' for 'yes', or any other word for 'no': ");
                             choiceStr = scanner.next();
                             if(choiceStr.equals("Y")){
                                 orderService.setOrder(myOrder);
-                                boolean b = orderService.completeOrder();
-                                if(b)
+                                boolean orderResult = orderService.completeOrder();
+                                if(orderResult)
                                     System.out.println("Order is complete!");
                             }
                             break;
@@ -120,28 +120,21 @@ public class DemonstrationServiceImpl implements DemonstrationService {
     @Override
     public void showSalesmanMenu() {
         scanner = new Scanner(System.in);
-
         System.out.println("1. Add Product");
         System.out.println("2. Update Price");
         System.out.println("3. Delete Product");
+        System.out.println("4. Add Category");
+        System.out.println("5. Edit Category");
+        System.out.println("6. Delete Category");
+        System.out.println("7. View All Categories" );
+        System.out.println("8. View All Products");
         System.out.println("0. Sign out");
         // add more menus for salesman
-        // 2. Change Price
-        // 3. Delete Product
-        // 4. ...
+
         int choice = scanner.nextInt();
-        /**
-         *
-     *      private Long id;
-         *     private String name;
-         *     private Category category;
-         *     private Category subCategory;
-         *     private Double price;
-         *
-         */
         int innerChoice = 0;
         switch (choice) {
-            case 1:
+            case 1:             // add product
                 System.out.print("Name: ");
                 scanner = new Scanner(System.in);
                 String name = scanner.nextLine();
@@ -171,6 +164,8 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                     category = OnlineMarketDemo.categories.get(innerChoice-1);
                 }
 
+
+                // Subcategory selection or new subcategory entry --- buni yanada yaxshiroq o'ylab ko'rish kerak
 //                if(OnlineMarketDemo.subCategories.containsKey(category)){
 //                    Collection<Category> subCats = OnlineMarketDemo.subCategories.values();
 //                    index = 1;
@@ -194,7 +189,11 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 
                 productService.addProduct(product);
                 break;
-            case 2:
+            case 2:             // update product price
+            case 3:              // delete product
+                // Ikkita case (holat) ni bir joyda boshqarish
+                // o'xshashlik yuqori bo`lgani uchun shunday qildik!
+
                 OnlineMarketDemo.products.forEach((key, val) -> {
                     System.out.println(key + ". " + val);
                 });
@@ -202,29 +201,25 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 innerChoice = scanner.nextInt();
                 Product productToUpdate = OnlineMarketDemo.products.get(innerChoice);
                 System.out.println(productToUpdate);
-                System.out.print("Enter new price: ");
-                Double newPrice = scanner.nextDouble();
-                productToUpdate.setPrice(newPrice);
-                System.out.println("Successfully updated.");
-                OnlineMarketDemo.products.forEach((key, val) -> {
-                    System.out.println(key + ". " + val);
-                });
-                break;
-            case 3:
-                OnlineMarketDemo.products.forEach((key, val) -> {
-                    System.out.println(key + ". " + val);
-                });
-                System.out.print("Enter product index: ");
-                innerChoice = scanner.nextInt();
-
-                System.out.println("---------------------");
-                System.out.println(OnlineMarketDemo.products.get(innerChoice));
-                System.out.print("Would you really like to delete this product?");
-                productService.deleteProduct(OnlineMarketDemo.products.get(innerChoice).getId());
-                System.out.println("Successfully deleted.");
-                OnlineMarketDemo.products.forEach((key, val) -> {
-                    System.out.println(key + ". " + val);
-                });
+                if(choice == 2) {
+                    System.out.print("Enter new price: ");
+                    Double newPrice = scanner.nextDouble();
+                    productToUpdate.setPrice(newPrice);
+                    System.out.println("Successfully updated.");
+                    OnlineMarketDemo.products.forEach((key, val) -> {
+                        System.out.println(key + ". " + val);
+                    });
+                }
+                else {
+                    System.out.println("---------------------");
+                    System.out.println(OnlineMarketDemo.products.get(innerChoice));
+                    System.out.print("Would you really like to delete this product?");
+                    productService.deleteProduct(OnlineMarketDemo.products.get(innerChoice).getId());
+                    System.out.println("Successfully deleted.");
+                    OnlineMarketDemo.products.forEach((key, val) -> {
+                        System.out.println(key + ". " + val);
+                    });
+                }
                 break;
             case 0:
                 OnlineMarketDemo.currentUser.setSignedIn(false);
