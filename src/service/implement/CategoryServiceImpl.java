@@ -4,6 +4,8 @@ import model.Category;
 import realization.OnlineMarketDemo;
 import service.CategoryService;
 
+import java.util.Scanner;
+
 /**
  * Author: khamza@nightwell-logistics.com
  * Date: 11/20/2021
@@ -25,6 +27,21 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public boolean editCategory(Category category) {
+        Scanner scanner = new Scanner(System.in);
+        if(OnlineMarketDemo.categories.contains(category)){
+            System.out.println("----------EDIT CATEGORY----------");
+            System.out.print("Enter new category name: ");
+            String newName = scanner.nextLine();
+            if(!newName.isEmpty())
+                category.setName(newName);
+            System.out.println("Enter below the updated category description: ");
+            String newDecription = scanner.nextLine();
+            if(!newDecription.isEmpty()){
+                category.setDescription(newDecription);
+            }
+            System.out.println("Category information was successfully updated.");
+            return true;
+        }
         return false;
     }
 
@@ -37,5 +54,15 @@ public class CategoryServiceImpl implements CategoryService {
             }
         }
         return false;
+    }
+
+    @Override
+    public Category findById(Long id) {
+        for (Category category : OnlineMarketDemo.categories) {
+            if(category.getId().equals(id)){
+                return category;
+            }
+        }
+        return null;
     }
 }

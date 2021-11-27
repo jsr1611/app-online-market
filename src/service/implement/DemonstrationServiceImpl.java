@@ -55,7 +55,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 System.out.print("Choose: ");
                 String choiceStr = scanner.next();
                 int choice = -1; //scanner.nextInt();
-                int innerChoice = -1;
+                long innerChoice = -1L;
                 for(Character c : choiceStr.toCharArray()){
                     if(Character.isDigit(c)){
                        choice = Integer.parseInt(choiceStr);
@@ -64,8 +64,12 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 if(choice == -1){
                     switch (choiceStr){
                         case "+":
-                            for (Map.Entry<Integer, Product> prod : OnlineMarketDemo.products.entrySet()) {
-                                System.out.println(prod.getKey() + ". " + prod.getValue().getName());
+                            System.out.println("Index\tName\t\t\t\tQuantity");
+                            for (Map.Entry<Product, Integer> prod : OnlineMarketDemo.products.entrySet()) {
+                                System.out.println(
+                                        prod.getKey().getId() + ".\t\t" +
+                                        prod.getKey().getName() + "\t\t\t\t" +
+                                        prod.getValue());
                             }
                             break;
                         case "-":
@@ -92,9 +96,13 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 }
                 else {
                     Category userCategory = categories.get(choice - 1);
-                    for (Map.Entry<Integer, Product> prod : OnlineMarketDemo.products.entrySet()) {
+                    System.out.println("Index\tName\t\t\t\tQuantity");
+                    for (Map.Entry<Product, Integer> prod : OnlineMarketDemo.products.entrySet()) {
                         if (categories.contains(userCategory)) {
-                            System.out.println(prod.getKey() + ". " + prod.getValue().getName());
+                            System.out.println(
+                                    prod.getKey().getId() + ".\t\t" +
+                                            prod.getKey().getName() + "\t\t\t\t" +
+                                            prod.getValue());
                         }
                     }
                 }
@@ -104,7 +112,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 else {
                     System.out.print("Enter product id to add it to shopping cart: ");
                     innerChoice = scanner.nextInt();
-                    Product productToBuy = OnlineMarketDemo.products.get(innerChoice);
+                    Product productToBuy = productService.findById(innerChoice);
                     System.out.print("Enter the quantity to buy: ");
                     int quantity = scanner.nextInt();
                     mycart.addProduct(productToBuy, quantity);
@@ -132,7 +140,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
         // add more menus for salesman
 
         int choice = scanner.nextInt();
-        int innerChoice = 0;
+        long innerChoice = 0L;
         switch (choice) {
             case 1:             // add product
                 System.out.print("Name: ");
@@ -141,12 +149,13 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 Category category =  null;
                 Category subCategory = null;
                 System.out.println("Please, choose a category: ");
-                int index = 1;
+
                 for(Category cat: OnlineMarketDemo.categories){
-                    System.out.println(index + ". " + cat.getName());
-                    index++;
+                    System.out.println(cat.getId() + ". " + cat.getName());
+
                 }
-                System.out.println(index + ". New");
+                int numCategories = OnlineMarketDemo.categories.size();
+                System.out.println(( numCategories + 1) + ". New");
                 scanner = new Scanner(System.in);
                 innerChoice = scanner.nextInt();
                 if(innerChoice > OnlineMarketDemo.categories.size()){
@@ -161,7 +170,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                     categoryService.addCategory(category);
 
                 }else {
-                    category = OnlineMarketDemo.categories.get(innerChoice-1);
+                    category = categoryService.findById(innerChoice-1);
                 }
 
 
@@ -199,7 +208,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 });
                 System.out.print("Choose product index: ");
                 innerChoice = scanner.nextInt();
-                Product productToUpdate = OnlineMarketDemo.products.get(innerChoice);
+                Product productToUpdate = productService.findById(innerChoice);
                 System.out.println(productToUpdate);
                 if(choice == 2) {
                     System.out.print("Enter new price: ");
@@ -212,9 +221,9 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 }
                 else {
                     System.out.println("---------------------");
-                    System.out.println(OnlineMarketDemo.products.get(innerChoice));
+                    System.out.println(productService.findById(innerChoice));
                     System.out.print("Would you really like to delete this product?");
-                    productService.deleteProduct(OnlineMarketDemo.products.get(innerChoice).getId());
+                    productService.deleteProduct(innerChoice);
                     System.out.println("Successfully deleted.");
                     OnlineMarketDemo.products.forEach((key, val) -> {
                         System.out.println(key + ". " + val);

@@ -5,6 +5,7 @@ import model.*;
 import service.CategoryService;
 import service.DemonstrationService;
 import service.RegistrationService;
+import service.implement.CategoryServiceImpl;
 import service.implement.DemonstrationServiceImpl;
 import service.implement.RegistrationServiceIml;
 
@@ -21,8 +22,8 @@ public class OnlineMarketDemo {
     public static Set<User> users = new HashSet<>();                        // DONE
     public static List<Category> categories = new ArrayList<>();
     public static Map<Category, Category> subCategories = new HashMap<>();
-    public static Map<Integer, Product> products = new HashMap<>();
-
+    public static Map<Product, Integer> products = new HashMap<>();     // Map<Product, Stock>
+                                                            // stock = quantity available in stock
     /**
      * orders, orderDetails, shoppingCarts - larga RUNTIME da load bo'ladi
      */
@@ -34,7 +35,7 @@ public class OnlineMarketDemo {
 
     static RegistrationService registrationService;
     static DemonstrationService demonstrationService;
-    static CategoryService categoryService;
+    static CategoryService categoryService = new CategoryServiceImpl();
 
     public static User currentUser;
 
@@ -49,6 +50,33 @@ public class OnlineMarketDemo {
         users.add(new User(4L, "Komil Alimov", "komil@gmail.com","komil123",
                 Role.MANAGER, new Account(1002_33_00002L,2222)));
 
+        Category electronics = new Category(1L, "Electronics", "Phones, iPhones, PCs, Notebooks, Cameras, Smartwatches, etc." );
+        Category food = new Category(2L, "Food", "Fruits, vegetables, other food products, etc. ");
+
+        Category phones = new Category(1L, "Phones", "Smartphones, iPhones, etc.");
+        Category pc = new Category(2L, "PC", "Laptops, Notebooks, PCs, etc. ");
+        Category camera = new Category(3L, "Cameras", "Digital cameras");
+
+        Category fruits = new Category(1L, "Fruits", "Apples, bananas, grapes, other fruits");
+
+
+        categoryService.addCategory(electronics);
+        categoryService.addCategory(food);
+
+        // key: sub-category, value: main category
+        subCategories.put(pc, electronics);
+        subCategories.put(phones, electronics);
+        subCategories.put(camera, electronics);
+
+        subCategories.put(fruits, food);
+
+        // adding 10 pcs of iPhone 13 of phones sub-category inside electronics big category which is 1300$ each
+        products.put(
+                new Product(1L, "iPhone 13", electronics, phones, 1300.0),
+                10);
+        products.put(
+                new Product(2L, "Samsung Laptop", electronics, pc, 1500.0 ),
+                10);
 
         int choice;
         do {

@@ -13,6 +13,11 @@ public interface ProductService {
 
     boolean editProduct(Product product);
 
+    boolean editProduct(Long id);
+
+    boolean deleteProduct(Product product);
+
     boolean deleteProduct(Long id);
 
+    Product findById(Long id);
 }
