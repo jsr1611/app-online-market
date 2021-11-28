@@ -21,8 +21,10 @@ public class DemonstrationServiceImpl implements DemonstrationService {
     static ProductService productService = new ProductServiceImpl();
     static OrderOperationServiceImpl orderService = new OrderOperationServiceImpl();
 
+
     @Override
     public void showCustomerMenu() {
+
         Long cartId = OnlineMarketDemo.currentUser.getId();
         scanner = new Scanner(System.in);
         List<Category> categories = OnlineMarketDemo.categories;
@@ -30,20 +32,17 @@ public class DemonstrationServiceImpl implements DemonstrationService {
         Map<Product, Integer> productsToBuy = new HashMap<>();
 
         ShoppingCart mycart = new ShoppingCart(cartId);
-        Order myOrder = new Order(cartId, OnlineMarketDemo.currentUser, OrderStatus.NEW, 0.0);
+
+        Double totalAmount = 0.0;
+        Order myOrder = new Order(cartId, OnlineMarketDemo.currentUser, OrderStatus.NEW, totalAmount);
         OrderDetails myOrderDetails = new OrderDetails(cartId, myOrder, productsToBuy);
 
         if(!OnlineMarketDemo.shoppingCarts.contains(mycart)){
             OnlineMarketDemo.shoppingCarts.add(mycart);
         }
-        if(!OnlineMarketDemo.orders.contains(myOrder)){
-            OnlineMarketDemo.orders.add(myOrder);
-        }
-        if(!OnlineMarketDemo.orderDetails.contains(myOrderDetails)){
-            OnlineMarketDemo.orderDetails.add(myOrderDetails);
-        }
 
-        while (true) {
+
+        while (OnlineMarketDemo.currentUser.getSignedIn()) {
             System.out.println("============ CUSTOMER FORM ==============");
             System.out.println("PlEASE CHOOSE CATEGORY:");
             for (Category category : categories) {
@@ -64,30 +63,23 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 if(choice == -1){
                     switch (choiceStr){
                         case "+":
-                            System.out.println("Index\tName\t\t\t\tQuantity");
-                            for (Map.Entry<Product, Integer> prod : OnlineMarketDemo.products.entrySet()) {
+                            System.out.println("Index\tName\t\t\t\t\t\tQuantity");
+                            for (Product prod : OnlineMarketDemo.products) {
                                 System.out.println(
-                                        prod.getKey().getId() + ".\t\t" +
-                                        prod.getKey().getName() + "\t\t\t\t" +
-                                        prod.getValue());
+                                        prod.getId() + ".\t\t\t" +
+                                                prod.getName() + "\t\t\t\t" +
+                                                prod.getQuantity());
                             }
                             break;
                         case "-":
                             cancelOption = true;
                             break;
                         case "v":
-                            System.out.println(mycart);
-                            System.out.print("Complete the payment? Enter 'Y' for 'yes', or any other word for 'no': ");
-                            choiceStr = scanner.next();
-                            if(choiceStr.equals("Y")){
-                                orderService.setOrder(myOrder);
-                                boolean orderResult = orderService.completeOrder();
-                                if(orderResult)
-                                    System.out.println("Order is complete!");
-                            }
+                            showShoppingCart(mycart);
                             break;
                         case "o":
-                            System.out.println(myOrder);
+                            showOrders(myOrder);
+                            //System.out.println(myOrder);
                             break;
                         default:
                             System.out.println("No such a case! Choose one of '+', '-', 'v', 'o' " +
@@ -96,13 +88,13 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 }
                 else {
                     Category userCategory = categories.get(choice - 1);
-                    System.out.println("Index\tName\t\t\t\tQuantity");
-                    for (Map.Entry<Product, Integer> prod : OnlineMarketDemo.products.entrySet()) {
+                    System.out.println("Index\tName\t\t\t\t\t\tQuantity");
+                    for (Product prod : OnlineMarketDemo.products) {
                         if (categories.contains(userCategory)) {
                             System.out.println(
-                                    prod.getKey().getId() + ".\t\t" +
-                                            prod.getKey().getName() + "\t\t\t\t" +
-                                            prod.getValue());
+                                    prod.getId() + ".\t\t\t" +
+                                            prod.getName() + "\t\t\t\t" +
+                                            prod.getQuantity());
                         }
                     }
                 }
@@ -111,25 +103,115 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 }
                 else {
                     System.out.print("Enter product id to add it to shopping cart: ");
-                    innerChoice = scanner.nextInt();
+                    scanner = new Scanner(System.in);
+
+                    choiceStr = scanner.next();
+
+                    if(choiceStr.equals("-")){
+                        break;
+                    }
+                    else  if(choiceStr.equals("v")){
+                        showShoppingCart(mycart);
+                        break;
+                    }
+                    else if(choiceStr.equals("o")){
+                        showOrders(myOrder);
+                        break;
+                    }
+                    else {
+                        innerChoice = Integer.parseInt(choiceStr);
+                    }
+
                     Product productToBuy = productService.findById(innerChoice);
                     System.out.print("Enter the quantity to buy: ");
-                    int quantity = scanner.nextInt();
-                    mycart.addProduct(productToBuy, quantity);
-                    System.out.println("Product was added to the shopping cart");
+
+                    double quantity = scanner.nextDouble();
+                    Double stockAvailable = productToBuy.getQuantity();
+                    int counter = 3;
+                    while (quantity > stockAvailable && --counter > 0){
+                        System.out.println("Not enough stock! You can buy only : " + stockAvailable + " (pcs)");
+                        System.out.print("Enter the quantity to buy: ");
+                        quantity = scanner.nextInt();
+                    }
+
+                    mycart.addProduct(productToBuy, (int)quantity);
+
+                    totalAmount += quantity * productToBuy.getPrice();
+
+                    Double cartTotalAmount = mycart.getTotalAmount();
+                    mycart.setTotalAmount(cartTotalAmount + totalAmount);
+
+                    Double orderAmount = myOrder.getTotalPrice();
+                    myOrder.setTotalPrice(orderAmount + totalAmount);
+
+                    orderService.setDetails(myOrderDetails);
+                    productService.updateQuantity(productToBuy, (-1) * quantity);
+                    //System.out.println("Product was added to the shopping cart");
                 }
 
             }
 
 
+    }
 
+    @Override
+    public void showOrders(Order myOrder) {
+
+    }
+
+    @Override
+    public void showShoppingCart(ShoppingCart mycart) {
+
+
+        System.out.println(mycart);
+        System.out.print("Complete the payment? Enter 'Y' for 'yes', or any other word for 'no': ");
+        String choiceStr = scanner.next();
+        if(choiceStr.equals("Y") || choiceStr.equals("y")){
+            orderService.setOrder(myOrder);
+            boolean orderResult = orderService.completeOrder();
+            if(orderResult){
+                //order complete bo`lganidan keyingina qo`shilsin!
+                if(!OnlineMarketDemo.orders.contains(myOrder)){
+                    OnlineMarketDemo.orders.add(myOrder);
+                }
+                if(!OnlineMarketDemo.orderDetails.contains(myOrderDetails)){
+                    OnlineMarketDemo.orderDetails.add(myOrderDetails);
+                }
+
+                OnlineMarketDemo.shoppingCarts.remove(mycart);
+                mycart = new ShoppingCart(mycart.getId() + 1);
+                System.out.println("Order is complete!");
+
+                //next Action
+                System.out.print("Choose next menu:");
+                System.out.println("1. Return to Orders");
+                System.out.println("2. Continue shopping");
+                System.out.println("3. Sign out");
+                int choice = scanner.nextInt();
+
+                switch (choice){
+                    case 1:
+                        showOrders();
+                        break;
+                    case 2:
+                        //cancelOption = true;
+                        break;
+                    case 3:
+                        //cancelOption = true;
+                        OnlineMarketDemo.currentUser.setSignedIn(false);
+                        break;
+                }
+            }
+            else
+                System.out.println("Payment was not successful.");
+        }
     }
 
     @Override
     public void showSalesmanMenu() {
         scanner = new Scanner(System.in);
         System.out.println("1. Add Product");
-        System.out.println("2. Update Price");
+        System.out.println("2. Update Product");
         System.out.println("3. Delete Product");
         System.out.println("4. Add Category");
         System.out.println("5. Edit Category");
@@ -152,7 +234,6 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 
                 for(Category cat: OnlineMarketDemo.categories){
                     System.out.println(cat.getId() + ". " + cat.getName());
-
                 }
                 int numCategories = OnlineMarketDemo.categories.size();
                 System.out.println(( numCategories + 1) + ". New");
@@ -187,13 +268,16 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 //                }
                 System.out.print("Price: ");
                 Double price = scanner.nextDouble();
+                System.out.print("Quantity: ");
+                Double quantity = scanner.nextDouble();
                 Long prodId = OnlineMarketDemo.products.size()+1L;
                 Product product = new Product(
                         prodId,
                         name,
                         category,
                         null,
-                        price
+                        price,
+                        quantity
                 );
 
                 productService.addProduct(product);
@@ -203,9 +287,9 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 // Ikkita case (holat) ni bir joyda boshqarish
                 // o'xshashlik yuqori bo`lgani uchun shunday qildik!
 
-                OnlineMarketDemo.products.forEach((key, val) -> {
-                    System.out.println(key + ". " + val);
-                });
+                for (Product product1 : OnlineMarketDemo.products) {
+                    System.out.println(product1.getId() + ". " + product1.getName() + " \t|\t " + product1.getQuantity());
+                }
                 System.out.print("Choose product index: ");
                 innerChoice = scanner.nextInt();
                 Product productToUpdate = productService.findById(innerChoice);
@@ -215,9 +299,9 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                     Double newPrice = scanner.nextDouble();
                     productToUpdate.setPrice(newPrice);
                     System.out.println("Successfully updated.");
-                    OnlineMarketDemo.products.forEach((key, val) -> {
-                        System.out.println(key + ". " + val);
-                    });
+                    for (Product product1 : OnlineMarketDemo.products) {
+                        System.out.println(product1.getId() + ". " + product1.getName() + " \t|\t " + product1.getQuantity());
+                    }
                 }
                 else {
                     System.out.println("---------------------");
@@ -225,9 +309,9 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                     System.out.print("Would you really like to delete this product?");
                     productService.deleteProduct(innerChoice);
                     System.out.println("Successfully deleted.");
-                    OnlineMarketDemo.products.forEach((key, val) -> {
-                        System.out.println(key + ". " + val);
-                    });
+                    for (Product product1 : OnlineMarketDemo.products) {
+                        System.out.println(product1.getId() + ". " + product1.getName() + "\t | \t " + product1.getQuantity());
+                    }
                 }
                 break;
             case 0:

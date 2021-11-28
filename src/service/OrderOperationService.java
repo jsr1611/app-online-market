@@ -8,7 +8,7 @@ public interface OrderOperationService {
 
     boolean payByCard(PaymentMethod paymentMethod);
 
-    void getNewPaymentMethod();
+    PaymentMethod getNewPaymentMethod();
 
 
 }

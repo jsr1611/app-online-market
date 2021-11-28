@@ -20,4 +20,6 @@ public interface ProductService {
     boolean deleteProduct(Long id);
 
     Product findById(Long id);
+
+    Boolean updateQuantity(Product product, Double quantity);
 }

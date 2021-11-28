@@ -64,81 +64,98 @@ public class OrderOperationServiceImpl implements OrderOperationService {
 
     @Override
     public boolean completeOrder() {
+        scanner = new Scanner(System.in);
         boolean paymentStatus = false;
         System.out.println("=====================YOUR ORDER=====================");
         System.out.println(details);
-        System.out.println("Payment methods\n" +
-                "1. UzCard\n" +
-                "2. Humo\n" +
-                "3. VISA/Master\n" +
-                "4. Cash");
+        while (true) {
+            System.out.println("Payment methods\n" +
+                    "1. UzCard\n" +
+                    "2. Humo\n" +
+                    "3. VISA/Master\n" +
+                    "4. Cash");
 
-        System.out.print("Please, choose your payment method: ");
-        int choice = scanner.nextInt();
-        switch (choice){
-            case 1:
-                PaymentMethod uzcardPayment = user.getPaymentMethodByCardType(CardType.UzCard);
-                if(uzcardPayment == null){
-                    getNewPaymentMethod();
-                }
-                else {
-                    paymentStatus = payByCard(uzcardPayment);
-                }
-                break;
-            case 2:
-                PaymentMethod humoPayment = user.getPaymentMethodByCardType(CardType.Humo);
-                if(humoPayment == null){
-                    getNewPaymentMethod();
-                }
-                else {
-                    paymentStatus = payByCard(humoPayment);
-                }
-                break;
-            case 3:
-                PaymentMethod visaPayment = user.getPaymentMethodByCardType(CardType.VISA, CardType.Master);
-                if(visaPayment == null){
-                    getNewPaymentMethod();
-                }
-                else {
-                    paymentStatus = payByCard(visaPayment);
-                }
-                break;
-            case 4:
-                System.out.println("Your payment method: cash");
-                order.setOrderStatus(OrderStatus.PAYMENT_SUCCESS);
-                System.out.println("Payment was successful!");
-                paymentStatus = true;
+
+            System.out.print("Please, choose your payment method: ");
+            int choice = scanner.nextInt();
+            PaymentMethod paymentMethod = null;
+            switch (choice) {
+                case 1:
+                    paymentMethod = user.getPaymentMethodByCardType(CardType.UzCard);
+                    if (paymentMethod == null) {
+                        paymentMethod = getNewPaymentMethod();
+
+                    } else {
+                        paymentStatus = payByCard(paymentMethod);
+                    }
+                    break;
+                case 2:
+                    paymentMethod = user.getPaymentMethodByCardType(CardType.Humo);
+                    if (paymentMethod == null) {
+                        getNewPaymentMethod();
+                    } else {
+                        paymentStatus = payByCard(paymentMethod);
+                    }
+                    break;
+                case 3:
+                    paymentMethod = user.getPaymentMethodByCardType(CardType.VISA, CardType.Master);
+                    if (paymentMethod == null) {
+                        getNewPaymentMethod();
+                    } else {
+                        paymentStatus = payByCard(paymentMethod);
+                    }
+                    break;
+                case 4:
+                    System.out.println("Your payment method: cash");
+                    order.setOrderStatus(OrderStatus.PAYMENT_SUCCESS);
+                    System.out.println("Payment was successful!");
+                    paymentStatus = true;
+            }
+            if(choice!= 4){
+                paymentStatus = payByCard(paymentMethod);
+            }
+            return paymentStatus;
         }
-        return paymentStatus;
     }
 
     public boolean payByCard(PaymentMethod paymentMethod) {
         System.out.println("Your payment method: " + paymentMethod.getCardType());
-        System.out.print("Enter first two digits of your card password: ");
+
         boolean paymentStatus = false;
-        int password = scanner.nextInt();
-        if(user.getAccount().getPassword().equals(password)){
-            if(user.getAccount().getBalance() > order.getTotalPrice()){
-                user.getAccount().addBalance(-1 * order.getTotalPrice());
-                order.setOrderStatus(OrderStatus.PAYMENT_SUCCESS);
-                System.out.println("Payment was successful!");
-                paymentStatus = true;
-            }
-            else {
-                System.out.println("Not enough money in your balance. Please, use a different payment method!");
-                order.setOrderStatus(OrderStatus.PAYMENT_FAILED);
+        int counter = 3;
+        while (--counter > 0 && !paymentStatus) {
+
+
+            System.out.print("Enter first two digits of your card password: ");
+            String password = scanner.next();
+            if (password.length() == 2 && user.getAccount().getPassword().toString().startsWith(password)) {
+                if (user.getAccount().getBalance() > order.getTotalPrice()) {
+                    user.getAccount().addBalance(-1 * order.getTotalPrice());
+                    order.setOrderStatus(OrderStatus.PAYMENT_SUCCESS);
+                    System.out.println("Payment was successful!");
+                    paymentStatus = true;
+                } else {
+                    System.out.println("Not enough money in your balance. Please, use a different payment method!");
+                    order.setOrderStatus(OrderStatus.PAYMENT_FAILED);
+                }
+            } else {
+                System.out.println("WRONG PASSWORD!!! " +
+                        "\nAfter " + counter + " more unsuccessful " +
+                        "attempts your account will be blocked automatically! " +
+                        "\nPLEASE, ENTER YOUR PASSWORD CORRECTLY TO AVOID AUTOMATIC ACCOUNT BLOCKING!\n");
             }
         }
         return paymentStatus;
     }
 
-    public void getNewPaymentMethod(){
+    public PaymentMethod getNewPaymentMethod(){
+        PaymentMethod paymentMethod = null;
         Long cardNum;
         Integer month, year;
         String cardHolderName;
         CardType cardType;
 
-        System.out.print("Enter your card number");
+        System.out.print("Enter your card number: ");
         cardNum = scanner.nextLong();
         //System.out.print("Enter last two digits of your card password: ");
         //password = scanner.nextInt();
@@ -166,15 +183,18 @@ public class OrderOperationServiceImpl implements OrderOperationService {
         System.out.print("Do you want to save payment info for future use? 'Y' for 'yes': ");
         scanner = new Scanner(System.in);
         boolean savePaymentInfo = scanner.next().contains("Y");
+
+        paymentMethod = new PaymentMethod(
+                cardHolderName,
+                cardNum,
+                month,
+                year,
+                cardType
+        );
+
         if(savePaymentInfo){
-            OnlineMarketDemo.currentUser.addPaymentMethod(
-                    new PaymentMethod(
-                            cardHolderName,
-                            cardNum,
-                            month,
-                            year,
-                            cardType
-                    ));
+            OnlineMarketDemo.currentUser.addPaymentMethod(paymentMethod);
         }
+        return paymentMethod;
     }
 }

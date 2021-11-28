@@ -13,16 +13,19 @@ public class Product {
     private Category category;
     private Category subCategory;
     private Double price;
+    private Double quantity = 0.0;
+    //private String quantityName;
 
     public Product() {
     }
 
-    public Product(Long id, String name, Category category, Category subCategory, Double price) {
+    public Product(Long id, String name, Category category, Category subCategory, Double price, Double quantity) {
         this.id = id;
         this.name = name;
         this.category = category;
         this.subCategory = subCategory;
         this.price = price;
+        this.quantity = quantity;
     }
 
     public Long getId() {
@@ -63,6 +66,14 @@ public class Product {
 
     public void setPrice(Double price) {
         this.price = price;
+    }
+
+    public Double getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Double quantity) {
+        this.quantity = quantity;
     }
 
     @Override

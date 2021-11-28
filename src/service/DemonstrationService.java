@@ -1,5 +1,8 @@
 package service;
 
+import model.Order;
+import model.ShoppingCart;
+
 /**
  * Author: khamza@nightwell-logistics.com
  * Date: 11/20/2021
@@ -14,5 +17,9 @@ public interface DemonstrationService {
     void showManagerMenu();
 
     void showDirectorMenu();
+
+    void showOrders(Order order);
+
+    void showShoppingCart(ShoppingCart cart);
 
 }

@@ -16,11 +16,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean addProduct(Product product) {
-        if(OnlineMarketDemo.products.containsKey(product)){
-            return false;
-        }
-        Integer key = OnlineMarketDemo.products.size()+1;
-        OnlineMarketDemo.products.put(product, key);
+        OnlineMarketDemo.products.add(product);
         return true;
     }
 
@@ -40,7 +36,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean deleteProduct(Product product) {
-        if(OnlineMarketDemo.products.containsKey(product)){
+        if(OnlineMarketDemo.products.contains(product)){
             OnlineMarketDemo.products.remove(product);
             return true;
         }
@@ -49,10 +45,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean deleteProduct(Long id) {
-        Set<Map.Entry<Product, Integer>> entries = OnlineMarketDemo.products.entrySet();
-        for (Map.Entry<Product, Integer> entry : entries) {
-            if(entry.getKey().getId().equals(id)){
-                OnlineMarketDemo.products.remove(entry.getKey());
+        for (Product product : OnlineMarketDemo.products) {
+            if(product.getId().equals(id)){
+                OnlineMarketDemo.products.remove(product);
                 return true;
             }
         }
@@ -61,12 +56,25 @@ public class ProductServiceImpl implements ProductService {
 
 
     public Product findById(Long id){
-        Set<Map.Entry<Product, Integer>> entries = OnlineMarketDemo.products.entrySet();
-        for (Map.Entry<Product, Integer> entry : entries) {
-            if(entry.getKey().getId().equals(id)){
-                return entry.getKey();
+        for (Product product : OnlineMarketDemo.products) {
+            if(product.getId().equals(id)){
+                return product;
             }
         }
         return null;
+    }
+
+    @Override
+    public Boolean updateQuantity(Product product, Double quantity) {
+        for (Product prod : OnlineMarketDemo.products) {
+            if(prod.equals(product)){
+                Double currentQty = prod.getQuantity();
+                currentQty += quantity;
+                product.setQuantity(currentQty);
+                return true;
+            }
+        }
+
+        return false;
     }
 }
