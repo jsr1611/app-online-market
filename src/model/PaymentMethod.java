@@ -8,6 +8,7 @@ public class PaymentMethod {
     private Integer expireMonth;
     private Integer expireYear;
     private CardType cardType;
+    private Boolean isActive;
 
     public PaymentMethod(String cardHolderName,
                          Long cardNum,
@@ -19,6 +20,7 @@ public class PaymentMethod {
         this.expireMonth = expireMonth;
         this.expireYear = expireYear;
         this.cardType = cardType;
+        this.isActive = true;
     }
 
        public String getCardHolderName() {
@@ -58,6 +60,14 @@ public class PaymentMethod {
 
     public void setCardType(CardType cardType) {
         this.cardType = cardType;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
     }
 
     @Override

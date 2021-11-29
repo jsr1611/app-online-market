@@ -160,7 +160,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
             for (Order order : OnlineMarketDemo.orders) {
                 System.out.println(order);
             }
-            System.out.print("Enter 'so' to sign out, or anything else continue:");
+
 
         }
         else if(role.equals(Role.SALESMAN)){
@@ -172,8 +172,9 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 }
             }
         }
-        String userOption = scanner.next();
+
         System.out.print("Enter 'so' to sign out, or anything else continue:");
+        String userOption = scanner.next();
         if(userOption.equals("so")){
             OnlineMarketDemo.currentUser.setSignedIn(false);
         }
@@ -199,7 +200,10 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 
                         OnlineMarketDemo.shoppingCarts.remove(mycart);
                         mycart = new ShoppingCart(mycart.getId() + 1, OnlineMarketDemo.currentUser.getId());
-                        System.out.println("Order is complete!");
+                        System.out.println("==================================");
+                        System.out.println("    YOUR ORDER IS COMPLETE!      ");
+                        System.out.println("==================================");
+
 
                         //next Action
 
@@ -394,12 +398,15 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 printProductInfo(OnlineMarketDemo.currentUser);
                 break;
             case 9:
+                // TODO: 11/30/21 not printing any order even so there are orders in the OnlineMarketDemo.orders list
+
                 printOrderInfo(OnlineMarketDemo.currentUser, Role.SALESMAN);
                 break;
             case 10:
                 System.out.println("ID \t|\t Name \t|\t Order Amount \t|\t");
                 for (Order order : OnlineMarketDemo.orders) {
                     User customer = order.getCustomer();
+                    // TODO: 11/30/21 need to create customer list for the salesman
                     System.out.println(customer.getId() + " \t|\t " + customer.getFullName() + " \t|\t " + order.getTotalPrice());
                 }
                 break;

@@ -6,6 +6,8 @@ import model.*;
 import realization.OnlineMarketDemo;
 import service.OrderOperationService;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 
 /**
@@ -95,7 +97,7 @@ public class OrderOperationServiceImpl implements OrderOperationService {
                 case 2:
                     paymentMethod = user.getPaymentMethodByCardType(CardType.Humo);
                     if (paymentMethod == null) {
-                        getNewPaymentMethod();
+                        paymentMethod = getNewPaymentMethod();
                     } else {
                         paymentStatus = payByCard(paymentMethod);
                     }
@@ -103,7 +105,7 @@ public class OrderOperationServiceImpl implements OrderOperationService {
                 case 3:
                     paymentMethod = user.getPaymentMethodByCardType(CardType.VISA, CardType.Master);
                     if (paymentMethod == null) {
-                        getNewPaymentMethod();
+                        paymentMethod = getNewPaymentMethod();
                     } else {
                         paymentStatus = payByCard(paymentMethod);
                     }
@@ -126,8 +128,13 @@ public class OrderOperationServiceImpl implements OrderOperationService {
 
         boolean paymentStatus = false;
         int counter = 3;
-        while (--counter > 0 && !paymentStatus) {
-
+        while (counter-- > 0 && !paymentStatus) {
+            if(counter == 0){
+                OnlineMarketDemo.currentUser.getAccount().setActive(false);
+                System.out.println("Your account was blocked due to 3 unsuccessful password entry attempts");
+                System.out.println("Please, visit a nearest bank to re-activate your account!");
+                return false;
+            }
 
             System.out.print("Enter first two digits of your card password: ");
             String password = scanner.next();
@@ -154,7 +161,7 @@ public class OrderOperationServiceImpl implements OrderOperationService {
     public PaymentMethod getNewPaymentMethod(){
         PaymentMethod paymentMethod = null;
         Long cardNum;
-        Integer month, year;
+        Integer month = 0, year = 0;
         String cardHolderName;
         CardType cardType;
 
@@ -178,11 +185,28 @@ public class OrderOperationServiceImpl implements OrderOperationService {
         System.out.print("Enter the name on your card: ");
         cardHolderName = scanner.nextLine();
         scanner = new Scanner(System.in);
-
         System.out.print("Enter the expiration month: ");
         month = scanner.nextInt();
+        //int tries = 3;
+        //System.out.println("Please, keep in mind that after 3 unsuccessfull attempts, your bank account will be blocked! You have " + tries + " left attempts!");
+        while (month < 1 || month > 12){
+            System.out.println("Incorrect month entry!");
+            System.out.print("Enter the expiration month: ");
+            month = scanner.nextInt();
+
+        }
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+
+        int currentYear = Integer.parseInt(format.format(new Date()).split("-")[0]);
+        int currentMonth = Integer.parseInt(format.format(new Date()).split("-")[1]);
+        int today = Integer.parseInt(format.format(new Date()).split("-")[2]);
         System.out.print("Enter the expiration year: ");
         year = scanner.nextInt();
+        while (year < currentYear || (year == currentYear && month < currentMonth)) {
+            System.out.println("Incorrect year entry!");
+            System.out.print("Enter the expiration year: ");
+            year = scanner.nextInt();
+        }
         System.out.print("Do you want to save payment info for future use? 'Y' for 'yes': ");
         scanner = new Scanner(System.in);
         boolean savePaymentInfo = scanner.next().contains("Y");
