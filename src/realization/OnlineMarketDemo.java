@@ -22,7 +22,7 @@ public class OnlineMarketDemo {
     public static Set<User> users = new HashSet<>();                        // DONE
     public static List<Category> categories = new ArrayList<>();
     public static Map<Category, Category> subCategories = new HashMap<>();
-    public static List<Product> products = new ArrayList<>();
+    public static Map<Product, Double> products = new HashMap<>();
     /**
      * orders, orderDetails, shoppingCarts - larga RUNTIME da load bo'ladi
      */
@@ -42,11 +42,17 @@ public class OnlineMarketDemo {
 
         users.add(new User(1L, "Jumanazar Saidov", "js@gmail.com", "js123",
                 Role.CUSTOMER, new Account(1000_11_00001L, 1234)));
-        users.add(new User(2L, "Ali Shermat", "ali@gmail.com", "ali123",
-                Role.SALESMAN, new Account(1000_22_00001L,1122)));
-        users.add(new User(3L, "Jamshid Babajon", "jama@gmail.com", "jama123",
+
+        User seller1 = new User(2L, "Ali Shermat", "ali@gmail.com", "ali123",
+                Role.SALESMAN, new Account(1000_22_00001L,1122));
+        User seller2 = new User(3L, "Hoji Akbar", "akbar@gmail.com", "akbar123",
+                Role.SALESMAN, new Account(1000_22_00002L,2211));
+        users.add(seller1);
+        users.add(seller2);
+
+        users.add(new User(4L, "Jamshid Babajon", "jama@gmail.com", "jama123",
                 Role.DIRECTOR, new Account(1000_33_00001L, 1111)));
-        users.add(new User(4L, "Komil Alimov", "komil@gmail.com","komil123",
+        users.add(new User(5L, "Komil Alimov", "komil@gmail.com","komil123",
                 Role.MANAGER, new Account(1002_33_00002L,2222)));
 
         Category electronics = new Category(1L, "Electronics", "Phones, iPhones, PCs, Notebooks, Cameras, Smartwatches, etc." );
@@ -70,18 +76,18 @@ public class OnlineMarketDemo {
         subCategories.put(fruits, food);
 
         // adding 10 pcs of iPhone 13 of phones sub-category inside electronics big category which is 1300$ each
-        products.add(
+        products.put(
                 new Product(
                         1L,
                     "iPhone 13",
                         electronics,
                         phones,
-                        1300.0,
-                    10.0));
+                        1300.0, seller1),
+                10.0);
 
-        products.add(
-                new Product(2L, "Samsung Laptop", electronics, pc, 1500.0,
-                10.0));
+        products.put(
+                new Product(2L, "Samsung Laptop", electronics, pc, 1500.0, seller2),
+                10.0);
 
         int choice;
         do {

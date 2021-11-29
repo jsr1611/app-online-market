@@ -13,11 +13,13 @@ import java.util.Set;
 public class ShoppingCart {
 
     private Long id;
-    private Map<Product, Integer> products;
+    private Long customerId;
+    private Map<Product, Double> products;
     private Double totalAmount;
 
-    public ShoppingCart(Long id) {
+    public ShoppingCart(Long id, Long customerId) {
         this.id = id;
+        this.customerId = customerId;
         this.products = new HashMap<>();
         totalAmount = 0.0;
     }
@@ -30,11 +32,19 @@ public class ShoppingCart {
         this.id = id;
     }
 
-    public Map<Product, Integer> getProducts() {
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    public Map<Product, Double> getProducts() {
         return products;
     }
 
-    public void setProducts(Map<Product, Integer> products) {
+    public void setProducts(Map<Product, Double> products) {
         this.products = products;
     }
 
@@ -45,7 +55,8 @@ public class ShoppingCart {
     public void setTotalAmount(Double totalAmount) {
         this.totalAmount = totalAmount;
     }
-    public void addProduct(Product product, Integer qtyToAdd){
+
+    public void addProduct(Product product, Double qtyToAdd){
         if(products.containsKey(product)) {
             products.forEach((prod, qty) -> {
                 if (prod.equals(product)) {
@@ -59,16 +70,16 @@ public class ShoppingCart {
         System.out.println("Product was successfully added to the cart.");
     }
 
-
     @Override
     public String toString() {
         StringBuilder prods = new StringBuilder();
-        for (Map.Entry<Product, Integer> productIntegerEntry : products.entrySet()) {
+        for (Map.Entry<Product, Double> productIntegerEntry : products.entrySet()) {
             prods.append(productIntegerEntry.getKey().getName()).append(", quantity: ").append(productIntegerEntry.getValue().toString()).append("\n");
         }
 
         return "Id: " + id +
+                ", \ncustomer id: " + customerId +
                 ", \nproducts: " +  prods +
-                ", \ntotalAmount: " + totalAmount;
+                ", \ntotal amount: " + totalAmount;
     }
 }

@@ -13,19 +13,18 @@ public class Product {
     private Category category;
     private Category subCategory;
     private Double price;
-    private Double quantity = 0.0;
-    //private String quantityName;
+    private User seller;
 
     public Product() {
     }
 
-    public Product(Long id, String name, Category category, Category subCategory, Double price, Double quantity) {
+    public Product(Long id, String name, Category category, Category subCategory, Double price, User seller) {
         this.id = id;
         this.name = name;
         this.category = category;
         this.subCategory = subCategory;
         this.price = price;
-        this.quantity = quantity;
+        this.seller = seller;
     }
 
     public Long getId() {
@@ -68,12 +67,12 @@ public class Product {
         this.price = price;
     }
 
-    public Double getQuantity() {
-        return quantity;
+    public User getSeller() {
+        return seller;
     }
 
-    public void setQuantity(Double quantity) {
-        this.quantity = quantity;
+    public void setSeller(User seller) {
+        this.seller = seller;
     }
 
     @Override
@@ -81,6 +80,7 @@ public class Product {
         return name +
                 ", category: " + (category != null ? category.getName() : "no category") +
                 ", subCategory: " + (subCategory != null ? subCategory.getName() : "no subcategory") +
-                ", price: " + price;
+                ", price: " + price +
+                ", seller: " + seller.getFullName() + "(" + seller.getEmail() + ")";
     }
 }

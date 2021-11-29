@@ -38,6 +38,7 @@ public class Order {
         this.customer = customer;
     }
 
+
     public OrderStatus getOrderStatus() {
         return orderStatus;
     }
@@ -58,7 +59,7 @@ public class Order {
     public String toString() {
         return "Order\n" +
                 "Id: " + id +
-                ", customer: " + customer.getEmail() +
+                ", customer: " + customer.getFullName() + "(" + customer.getEmail() + ")" +
                 ", orderStatus: " + orderStatus +
                 ", totalPrice: " + totalPrice;
     }

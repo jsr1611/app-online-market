@@ -1,5 +1,6 @@
 package service;
 
+import enums.Role;
 import model.Order;
 import model.ShoppingCart;
 
@@ -18,8 +19,8 @@ public interface DemonstrationService {
 
     void showDirectorMenu();
 
-    void showOrders(Order order);
+    void showOrders(Order order, Role role);
 
-    void showShoppingCart(ShoppingCart cart);
+    void showShoppingCart(ShoppingCart cart, Role userRole);
 
 }

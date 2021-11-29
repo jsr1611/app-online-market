@@ -68,6 +68,9 @@ public class OrderOperationServiceImpl implements OrderOperationService {
         boolean paymentStatus = false;
         System.out.println("=====================YOUR ORDER=====================");
         System.out.println(details);
+        if(order == null){
+            order = details.getOrder();
+        }
         while (true) {
             System.out.println("Payment methods\n" +
                     "1. UzCard\n" +

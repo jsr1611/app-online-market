@@ -13,9 +13,9 @@ public class OrderDetails {
 
     private Long id;
     private Order order;
-    private Map<Product, Integer> products;
+    private Map<Product, Double> products;
 
-    public OrderDetails(Long id, Order order, Map<Product, Integer> products){
+    public OrderDetails(Long id, Order order, Map<Product, Double> products){
         this.id = id;
         this.order = order;
         this.products = products;
@@ -37,11 +37,11 @@ public class OrderDetails {
         this.order = order;
     }
 
-    public Map<Product, Integer> getProducts(){
+    public Map<Product, Double> getProducts(){
         return products;
     }
 
-    public void setProducts(Map<Product, Integer> products) {
+    public void setProducts(Map<Product, Double> products) {
         this.products = products;
     }
 
@@ -50,8 +50,7 @@ public class OrderDetails {
     public String toString() {
         StringBuilder prods = new StringBuilder();
         int counter = 0;
-        Set<Map.Entry<Product, Integer>> entries = products.entrySet();
-        for(Map.Entry<Product, Integer> prod: products.entrySet()){
+        for(Map.Entry<Product, Double> prod: products.entrySet()){
                 prods.append(counter++)
                         .append(". ")
                         .append("\t")
