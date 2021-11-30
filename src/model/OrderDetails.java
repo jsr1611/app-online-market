@@ -63,6 +63,9 @@ public class OrderDetails {
                         .append(prod.getKey().getPrice() * prod.getValue())
                         .append("\n");
         }
+
+        // TODO: 11/30/2021 Improve the printing format
+
         return "Order details\n" +
                 "Id: " + id +
                 "\n" + order +

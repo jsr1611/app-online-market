@@ -267,6 +267,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
             System.out.println("9. View All Orders");
             System.out.println("10. View All Customers");
             System.out.println("0. Sign out");
+            System.out.print("Choose: ");
             // add more menus for salesman
 
             int choice = scanner.nextInt();
@@ -294,7 +295,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                         category = categoryService.findById(innerChoice - 1);
                     }
 
-
+                    // TODO: 11/30/2021 Subcategory logic needs to be put here
                     // Subcategory selection or new subcategory entry --- buni yanada yaxshiroq o'ylab ko'rish kerak
 //                if(OnlineMarketDemo.subCategories.containsKey(category)){
 //                    Collection<Category> subCats = OnlineMarketDemo.subCategories.values();
@@ -320,6 +321,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                             OnlineMarketDemo.currentUser
                     );
                     productService.addProduct(product, quantity);
+                    System.out.println("Product " + product.getName() + " ( quantity: " + quantity+  ") was successfully added to the list.");
                     break;
                 case 2:             // update product price
                 case 3:              // delete product
@@ -441,19 +443,26 @@ public class DemonstrationServiceImpl implements DemonstrationService {
      */
     public void printOrderInfo(User user, Role role) {
         System.out.println("============= ORDER INFO ===============");
+        int counter = 0;
         for (OrderDetails orderDetail : OnlineMarketDemo.orderDetails) {
             if (role.equals(Role.SALESMAN)) {
                 for (Map.Entry<Product, Double> productQtyEntry : orderDetail.getProducts().entrySet()) {
                     if (productQtyEntry.getKey().getSeller().equals(user)) {
                         System.out.println(orderDetail);
+                        counter++;
                     }
                 }
+
             } else if (role.equals(Role.CUSTOMER)) {
                 if (orderDetail.getOrder().getCustomer().equals(user)) {
                     // TODO: 11/30/2021 needs to be overridden to print in a custom format
                     System.out.println(orderDetail);
+                    counter++;
                 }
             }
+        }
+        if(counter == 0){
+            System.out.println("No orders were placed so far.");
         }
     }
 

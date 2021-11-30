@@ -8,6 +8,7 @@ import service.RegistrationService;
 
 import java.util.Scanner;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Author: khamza@nightwell-logistics.com
@@ -27,20 +28,42 @@ public class RegistrationServiceIml implements RegistrationService {
 
         System.out.print("Email: ");
         String email = scanner.nextLine();
+        while (!validateEmail(email)){
+            System.out.println("Incorrect email format!");
+            System.out.print("Email: ");
+            email = scanner.nextLine();
+        }
 
         System.out.print("Password: ");
         String password = scanner.nextLine();
 
-        System.out.print("Choose the role:");
+
         int indexOfRole = 1;
         for (Role value : Role.values()) {
             System.out.println(indexOfRole + " " + value);
             indexOfRole++;
         }
+        System.out.print("Choose the role: ");
         int roleIndex = scanner.nextInt();
+        while (roleIndex >= indexOfRole || roleIndex < 1){
+            System.out.println("Incorrect input!");
+            System.out.print("Choose the role: ");
+            roleIndex = scanner.nextInt();
+        }
         Role role = Role.values()[roleIndex - 1];
-        System.out.print("Please, enter your account password (4 digits): ");
-        int accountPassword = scanner.nextInt();
+
+        int accountPassword = -1;
+        while (accountPassword == -1){
+            System.out.print("Please, enter your account password (4 digits): ");
+            try {
+                accountPassword = scanner.nextInt();
+            }
+            catch (Exception e){
+                System.out.println("Incorrect password input!");
+            }
+
+        }
+
         Account account = new Account(accountNum++, accountPassword);
 
         Set<User> users = OnlineMarketDemo.users;
@@ -64,6 +87,11 @@ public class RegistrationServiceIml implements RegistrationService {
         scanner = new Scanner(System.in);
         System.out.print("Email: ");
         String email = scanner.next();
+        while (!validateEmail(email)){
+            System.out.println("Wrong email format!");
+            System.out.print("Email: ");
+            email = scanner.next();
+        }
         System.out.print("Password: ");
         String password = scanner.next();
 
@@ -74,5 +102,12 @@ public class RegistrationServiceIml implements RegistrationService {
             }
         }
         return false;
+    }
+
+    public static boolean validateEmail(String emailAddress) {
+        String regexPattern = "^[a-zA-Z0-9_!#$%&'*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
+        return Pattern.compile(regexPattern)
+                .matcher(emailAddress)
+                .matches();
     }
 }
