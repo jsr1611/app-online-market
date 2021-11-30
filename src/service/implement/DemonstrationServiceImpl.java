@@ -24,18 +24,29 @@ public class DemonstrationServiceImpl implements DemonstrationService {
     Order myOrder;
     OrderDetails myOrderDetails;
     ShoppingCart myCart;
+    List<Category> categories; // = OnlineMarketDemo.categories;
+    Map<Product, Double> availableProducts; // = OnlineMarketDemo.products;
 
 
     @Override
     public void showCustomerMenu() {
 
+        if(categories == null){
+            categories = OnlineMarketDemo.categories;
+        }
+        if(availableProducts == null){
+            availableProducts = OnlineMarketDemo.products;
+        }
+
         Long customerId = OnlineMarketDemo.currentUser.getId();
         Map<Product, Double> productsToBuy = null;
+
+
         Long cartId = null;
         Double totalAmount = null;
         boolean userHasCart = false;
         for (ShoppingCart shoppingCart : OnlineMarketDemo.shoppingCarts) {
-            if(shoppingCart.getCustomerId().equals(customerId)){
+            if (shoppingCart.getCustomerId().equals(customerId)) {
                 userHasCart = true;
                 cartId = shoppingCart.getId();
                 myCart = shoppingCart;
@@ -44,8 +55,8 @@ public class DemonstrationServiceImpl implements DemonstrationService {
             }
         }
 
-        if(!userHasCart){
-            cartId = OnlineMarketDemo.shoppingCarts.size()+1L;
+        if (!userHasCart) {
+            cartId = OnlineMarketDemo.shoppingCarts.size() + 1L;
             myCart = new ShoppingCart(cartId, customerId);
             productsToBuy = new HashMap<>();
             totalAmount = 0.0;
@@ -53,65 +64,60 @@ public class DemonstrationServiceImpl implements DemonstrationService {
         }
         Long orderId = OnlineMarketDemo.orders.size() + 1L;
         scanner = new Scanner(System.in);
-        List<Category> categories = OnlineMarketDemo.categories;
+
+
 
         myOrder = new Order(orderId, OnlineMarketDemo.currentUser, OrderStatus.NEW, totalAmount);
         myOrderDetails = new OrderDetails(orderId, myOrder, productsToBuy);
 
         while (OnlineMarketDemo.currentUser.getSignedIn()) {
             System.out.println("============ CUSTOMER FORM ==============");
-            System.out.println("PlEASE CHOOSE CATEGORY:");
-            for (Category category : categories) {
-                System.out.println(category.getId() + ". " + category.getName());
-            }
+            printCategoryInfo();
             boolean cancelOption = false;
             System.out.println("+ Choose All   - Cancel   v - View Shopping Cart   o - My Orders");
             System.out.println("=========================================");
-                System.out.print("Choose: ");
-                String choiceStr = scanner.next();
-                int choice = -1; //scanner.nextInt();
-                long innerChoice = -1L;
-                for(Character c : choiceStr.toCharArray()){
-                    if(Character.isDigit(c)){
-                       choice = Integer.parseInt(choiceStr);
-                    }
+            System.out.print("Choose: ");
+            String choiceStr = scanner.next();
+            int choice = -1; //scanner.nextInt();
+            long innerChoice = -1L;
+            for (Character c : choiceStr.toCharArray()) {
+                if (Character.isDigit(c)) {
+                    choice = Integer.parseInt(choiceStr);
                 }
-                if(choice == -1){
-                    switch (choiceStr){
-                        case "+":
-                            printProductInfo();
-                            break;
-                        case "-":
-                            cancelOption = true;
-                            break;
-                        case "v":
+            }
+            if (choice == -1) {
+                switch (choiceStr) {
+                    case "+":
+                        availableProducts = printProductInfo();
+                        break;
+                    case "-":
+                    case "v":
+                    case "o":
+                        if(choiceStr.equals("v"))
                             showShoppingCart(myCart, Role.CUSTOMER);
-                            break;
-                        case "o":
+                        else if(choiceStr.equals("o"))
                             showOrders(myOrder, Role.CUSTOMER);
-                            //System.out.println(myOrder);
-                            break;
-                        default:
-                            System.out.println("No such a case! Choose one of '+', '-', 'v', 'o' " +
-                                    "or product id from the list.");
-                    }
+                        cancelOption = true;
+                        break;
+                    default:
+                        System.out.println("No such a case! Choose one of '+', '-', 'v', 'o' " +
+                                "or product id from the list.");
                 }
-                else {
-                    Category userCategory = categories.get(choice - 1);
-                    printProductInfo(userCategory);
-                }
-                if(cancelOption){
-                    break;
-                }
-                else {
+            } else {
+                Category userCategory = categories.get(choice - 1);
+                availableProducts = printProductInfo(userCategory);
+            }
+            if (cancelOption) {
+                break;
+            } else {
+                if(!availableProducts.isEmpty()) {
                     System.out.print("Enter product id to add it to shopping cart or anything else to return to previous menu: ");
                     scanner = new Scanner(System.in);
                     choiceStr = scanner.next();
                     try {
                         innerChoice = Integer.parseInt(choiceStr);
                         Map.Entry<Product, Double> productToBuy = productService.findById(innerChoice);
-                        if(productToBuy != null) {
-
+                        if (productToBuy != null) {
                             System.out.print("Enter the quantity to buy: ");
 
                             double quantity = scanner.nextDouble();
@@ -135,38 +141,37 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                             productService.updateQuantity(productToBuy.getKey(), (-1) * quantity);
                         }
                         //System.out.println("Product was added to the shopping cart");
-                    }
-                    catch (Exception e){
+                    } catch (Exception e) {
                         // return to previous menu
                     }
                 }
+                else {
+                    System.out.println("No products available in this category.");
+                }
             }
+        }
 
 
     }
 
 
-
-
     @Override
     public void showOrders(Order myOrder, Role role) {
         scanner = new Scanner(System.in);
-        if(role.equals(Role.CUSTOMER)){
-            System.out.println(myOrder);
-
-
-        }
-        else if(role.equals(Role.DIRECTOR)){
+        if (role.equals(Role.CUSTOMER)) {
+            for (OrderDetails orderDetail : OnlineMarketDemo.orderDetails) {
+                if (orderDetail.getOrder().getCustomer().equals(OnlineMarketDemo.currentUser)) {
+                    System.out.println(orderDetail);
+                }
+            }
+        } else if (role.equals(Role.DIRECTOR)) {
             for (Order order : OnlineMarketDemo.orders) {
                 System.out.println(order);
             }
-
-
-        }
-        else if(role.equals(Role.SALESMAN)){
+        } else if (role.equals(Role.SALESMAN)) {
             for (OrderDetails orderDetail : OnlineMarketDemo.orderDetails) {
                 for (Map.Entry<Product, Double> productDoubleEntry : orderDetail.getProducts().entrySet()) {
-                    if(productDoubleEntry.getKey().getSeller().equals(OnlineMarketDemo.currentUser)){
+                    if (productDoubleEntry.getKey().getSeller().equals(OnlineMarketDemo.currentUser)) {
                         System.out.println(orderDetail.getOrder());
                     }
                 }
@@ -175,15 +180,15 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 
         System.out.print("Enter 'so' to sign out, or anything else continue:");
         String userOption = scanner.next();
-        if(userOption.equals("so")){
+        if (userOption.equals("so")) {
             OnlineMarketDemo.currentUser.setSignedIn(false);
         }
     }
 
     @Override
     public void showShoppingCart(ShoppingCart mycart, Role userRole) {
-        if(userRole.equals(Role.CUSTOMER)){
-            if(mycart.getProducts().size() > 0) {
+        if (userRole.equals(Role.CUSTOMER)) {
+            if (mycart.getProducts().size() > 0) {
                 System.out.println(mycart);
                 System.out.print("Complete the payment? Enter 'Y' for 'yes', or any other word for 'no': ");
                 String choiceStr = scanner.next();
@@ -199,7 +204,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                         }
 
                         OnlineMarketDemo.shoppingCarts.remove(mycart);
-                        mycart = new ShoppingCart(mycart.getId() + 1, OnlineMarketDemo.currentUser.getId());
+                        myCart = new ShoppingCart(mycart.getId() + 1, OnlineMarketDemo.currentUser.getId());
                         System.out.println("==================================");
                         System.out.println("    YOUR ORDER IS COMPLETE!      ");
                         System.out.println("==================================");
@@ -228,17 +233,14 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                     } else
                         System.out.println("Payment was not successful.");
                 }
-            }
-            else {
+            } else {
                 System.out.println("Your shopping cart is empty!");
             }
-        }
-        else if(userRole.equals(Role.SALESMAN)){
+        } else if (userRole.equals(Role.SALESMAN)) {
             for (ShoppingCart shoppingCart : OnlineMarketDemo.shoppingCarts) {
-                if(shoppingCart.getProducts().size() > 0){
+                if (shoppingCart.getProducts().size() > 0) {
                     System.out.println(shoppingCart);
-                }
-                else {
+                } else {
                     System.out.println("Customer with id (" + shoppingCart.getCustomerId() +
                             ") has been checking your products " +
                             "but has not added any products yet.");
@@ -251,48 +253,49 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 
     @Override
     public void showSalesmanMenu() {
-        System.out.println("============ SALESMAN FORM ==============");
-        scanner = new Scanner(System.in);
-        System.out.println("1. Add Product");
-        System.out.println("2. Update Product Info");
-        System.out.println("3. Delete Product");
-        System.out.println("4. Add Category");
-        System.out.println("5. Edit Category");
-        System.out.println("6. Delete Category");
-        System.out.println("7. View All Categories" );
-        System.out.println("8. View All Products");
-        System.out.println("9. View All Orders");
-        System.out.println("10. View All Customers");
-        System.out.println("0. Sign out");
-        // add more menus for salesman
+        while (OnlineMarketDemo.currentUser.getSignedIn()) {
+            System.out.println("============ SALESMAN FORM ==============");
+            scanner = new Scanner(System.in);
+            System.out.println("1. Add Product");
+            System.out.println("2. Update Product Info");
+            System.out.println("3. Delete Product");
+            System.out.println("4. Add Category");
+            System.out.println("5. Edit Category");
+            System.out.println("6. Delete Category");
+            System.out.println("7. View All Categories");
+            System.out.println("8. View All Products");
+            System.out.println("9. View All Orders");
+            System.out.println("10. View All Customers");
+            System.out.println("0. Sign out");
+            // add more menus for salesman
 
-        int choice = scanner.nextInt();
-        long innerChoice = 0L;
-        switch (choice) {
-            case 1:             // add product
-                System.out.print("Name: ");
-                scanner = new Scanner(System.in);
-                String name = scanner.nextLine();
-                Category category =  null;
-                Category subCategory = null;
-                System.out.println("Please, choose a category: ");
+            int choice = scanner.nextInt();
+            long innerChoice = 0L;
+            switch (choice) {
+                case 1:             // add product
+                    System.out.print("Name: ");
+                    scanner = new Scanner(System.in);
+                    String name = scanner.nextLine();
+                    Category category = null;
+                    Category subCategory = null;
+                    System.out.println("Please, choose a category: ");
 
-                for(Category cat: OnlineMarketDemo.categories){
-                    System.out.println(cat.getId() + ". " + cat.getName());
-                }
-                int numCategories = OnlineMarketDemo.categories.size();
-                System.out.println(( numCategories + 1) + ". New");
-                scanner = new Scanner(System.in);
-                innerChoice = scanner.nextInt();
-                if(innerChoice > OnlineMarketDemo.categories.size()){
-                    category = addNewCategory();
+                    for (Category cat : OnlineMarketDemo.categories) {
+                        System.out.println(cat.getId() + ". " + cat.getName());
+                    }
+                    int numCategories = OnlineMarketDemo.categories.size();
+                    System.out.println((numCategories + 1) + ". New");
+                    scanner = new Scanner(System.in);
+                    innerChoice = scanner.nextInt();
+                    if (innerChoice > OnlineMarketDemo.categories.size()) {
+                        category = addNewCategory();
 
-                }else {
-                    category = categoryService.findById(innerChoice-1);
-                }
+                    } else {
+                        category = categoryService.findById(innerChoice - 1);
+                    }
 
 
-                // Subcategory selection or new subcategory entry --- buni yanada yaxshiroq o'ylab ko'rish kerak
+                    // Subcategory selection or new subcategory entry --- buni yanada yaxshiroq o'ylab ko'rish kerak
 //                if(OnlineMarketDemo.subCategories.containsKey(category)){
 //                    Collection<Category> subCats = OnlineMarketDemo.subCategories.values();
 //                    index = 1;
@@ -303,119 +306,117 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 //                    System.out.println(index + ". New");
 //
 //                }
-                System.out.print("Price: ");
-                Double price = scanner.nextDouble();
-                System.out.print("Quantity: ");
-                Double quantity = scanner.nextDouble();
-                Long prodId = OnlineMarketDemo.products.size()+1L;
-                Product product = new Product(
-                        prodId,
-                        name,
-                        category,
-                        null,
-                        price,
-                        OnlineMarketDemo.currentUser
-                );
-                productService.addProduct(product, quantity);
-                break;
-            case 2:             // update product price
-            case 3:              // delete product
-                // Ikkita case (holat) ni bir joyda boshqarish
-                // o'xshashlik yuqori bo`lgani uchun shunday qildik!
+                    System.out.print("Price: ");
+                    Double price = scanner.nextDouble();
+                    System.out.print("Quantity: ");
+                    Double quantity = scanner.nextDouble();
+                    Long prodId = OnlineMarketDemo.products.size() + 1L;
+                    Product product = new Product(
+                            prodId,
+                            name,
+                            category,
+                            null,
+                            price,
+                            OnlineMarketDemo.currentUser
+                    );
+                    productService.addProduct(product, quantity);
+                    break;
+                case 2:             // update product price
+                case 3:              // delete product
+                    // Ikkita case (holat) ni bir joyda boshqarish
+                    // o'xshashlik yuqori bo`lgani uchun shunday qildik!
 
-                printProductInfo();
-                System.out.print("Choose product index: ");
-                innerChoice = scanner.nextInt();
-                Map.Entry<Product, Double> productToUpdate = productService.findById(innerChoice);
-                System.out.println(productToUpdate);
-                if(choice == 2) {
-                    System.out.print("Enter new price: ");
-                    Double newPrice = scanner.nextDouble();
-                    productToUpdate.getKey().setPrice(newPrice);
-                    System.out.println("Successfully updated.");
                     printProductInfo();
-                }
-                else {
-                    System.out.println("---------------------");
-                    System.out.println(productService.findById(innerChoice));
-                    System.out.print("Would you really like to delete this product? Enter Y for yes, or anything else for no:");
+                    System.out.print("Choose product index: ");
+                    innerChoice = scanner.nextInt();
+                    Map.Entry<Product, Double> productToUpdate = productService.findById(innerChoice);
+                    System.out.println(productToUpdate);
+                    if (choice == 2) {
+                        System.out.print("Enter new price: ");
+                        Double newPrice = scanner.nextDouble();
+                        productToUpdate.getKey().setPrice(newPrice);
+                        System.out.println("Successfully updated.");
+                        printProductInfo();
+                    } else {
+                        System.out.println("---------------------");
+                        System.out.println(productService.findById(innerChoice));
+                        System.out.print("Would you really like to delete this product? Enter Y for yes, or anything else for no:");
+                        scanner = new Scanner(System.in);
+                        String response = scanner.next();
+                        if (response.equals("Y") || response.equals("y")) {
+                            productService.deleteProduct(innerChoice);
+                            System.out.println("Successfully deleted.");
+                        }
+                        printProductInfo();
+                    }
+                    break;
+                case 4:
+                    addNewCategory();
+                    break;
+                case 5:
+                    printCategoryInfo();
+                    System.out.print("Choose category id to be edited:");
+                    innerChoice = scanner.nextInt();
+                    Category categoryToEdit = categoryService.findById(innerChoice);
+                    System.out.println("Enter new name below or leave it empty for no changes");
+                    System.out.print("Name:");
+                    scanner = new Scanner(System.in);
+                    String catName = scanner.nextLine();
+                    if (!catName.isEmpty()) {
+                        categoryToEdit.setName(catName);
+                    }
+
+                    System.out.println("Enter below new description or leave it empty for no changes");
+                    String catDescription = scanner.nextLine();
+                    if (!catDescription.isEmpty()) {
+                        categoryToEdit.setDescription(catDescription);
+                    }
+                    if (catName.isEmpty() && catDescription.isEmpty()) {
+                        System.out.println("No changes were made.");
+                    } else {
+                        System.out.println("Category was successfully edited.");
+                    }
+                    System.out.println(categoryToEdit);
+                    break;
+                case 6:
+                    printCategoryInfo();
+                    System.out.print("Choose category id to be deleted:");
+                    innerChoice = scanner.nextInt();
+                    Category categoryToBeDeleted = categoryService.findById(innerChoice);
+                    System.out.println("Are you sure you want to delete category " + categoryToBeDeleted.getName() + "? Enter Y for yes, or anything else for no:");
                     scanner = new Scanner(System.in);
                     String response = scanner.next();
-                    if(response.equals("Y") || response.equals("y")){
-                        productService.deleteProduct(innerChoice);
-                        System.out.println("Successfully deleted.");
+                    if (response.equals("Y") || response.equals("y")) {
+                        categoryService.deleteCategory(innerChoice);
+                        System.out.printf("Category %s was successfully deleted.\n", categoryToBeDeleted.getName());
                     }
-                    printProductInfo();
-                }
-                break;
-            case 4:
-                addNewCategory();
-                break;
-            case 5:
-                printCategoryInfo();
-                System.out.print("Choose category id to be edited:");
-                innerChoice = scanner.nextInt();
-                Category categoryToEdit = categoryService.findById(innerChoice);
-                System.out.println("Enter new name below or leave it empty for no changes");
-                System.out.print("Name:");
-                scanner = new Scanner(System.in);
-                String catName = scanner.nextLine();
-                if(!catName.isEmpty()){
-                    categoryToEdit.setName(catName);
-                }
 
-                System.out.println("Enter below new description or leave it empty for no changes");
-                String catDescription = scanner.nextLine();
-                if(!catDescription.isEmpty()){
-                    categoryToEdit.setDescription(catDescription);
-                }
-                if(catName.isEmpty() && catDescription.isEmpty()){
-                    System.out.println("No changes were made.");
-                }
-                else {
-                    System.out.println("Category was successfully edited.");
-                }
-                System.out.println(categoryToEdit);
-                break;
-            case 6:
-                printCategoryInfo();
-                System.out.print("Choose category id to be deleted:");
-                innerChoice = scanner.nextInt();
-                Category categoryToBeDeleted = categoryService.findById(innerChoice);
-                System.out.println("Are you sure you want to delete category " + categoryToBeDeleted.getName() + "? Enter Y for yes, or anything else for no:");
-                scanner = new Scanner(System.in);
-                String response = scanner.next();
-                if(response.equals("Y") || response.equals("y")){
-                    categoryService.deleteCategory(innerChoice);
-                    System.out.printf("Category %s was successfully deleted.\n", categoryToBeDeleted.getName());
-                }
-
-                break;
-            case 7:
-                printCategoryInfo();
-                break;
-            case 8:
-                printProductInfo(OnlineMarketDemo.currentUser);
-                break;
-            case 9:
-                // TODO: 11/30/21 not printing any order even so there are orders in the OnlineMarketDemo.orders list
-
-                printOrderInfo(OnlineMarketDemo.currentUser, Role.SALESMAN);
-                break;
-            case 10:
-                System.out.println("ID \t|\t Name \t|\t Order Amount \t|\t");
-                for (Order order : OnlineMarketDemo.orders) {
-                    User customer = order.getCustomer();
-                    // TODO: 11/30/21 need to create customer list for the salesman
-                    System.out.println(customer.getId() + " \t|\t " + customer.getFullName() + " \t|\t " + order.getTotalPrice());
-                }
-                break;
-            case 0:
-                OnlineMarketDemo.currentUser.setSignedIn(false);
-                System.out.println("Signed out.");
-                break;
-            default:
-                System.out.println("No such a case! Wrong entry.");
+                    break;
+                case 7:
+                    printCategoryInfo();
+                    break;
+                case 8:
+                    printProductInfo(OnlineMarketDemo.currentUser);
+                    break;
+                case 9:
+                    printOrderInfo(OnlineMarketDemo.currentUser, Role.SALESMAN);
+                    break;
+                case 10:
+                    // TODO: 11/30/2021 Need to improve the printing format
+                    System.out.println("ID \t|\t Name \t|\t Order Amount \t|\t");
+                    for (Order order : OnlineMarketDemo.orders) {
+                        User customer = order.getCustomer();
+                        // TODO: 11/30/21 need to create customer list for the salesman
+                        System.out.println(customer.getId() + " \t|\t " + customer.getFullName() + " \t|\t " + order.getTotalPrice());
+                    }
+                    break;
+                case 0:
+                    OnlineMarketDemo.currentUser.setSignedIn(false);
+                    System.out.println("Signed out.");
+                    break;
+                default:
+                    System.out.println("No such a case! Wrong entry.");
+            }
         }
 
     }
@@ -434,20 +435,22 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 
     /**
      * Print order details for all orders for the given user role
+     *
      * @param user user
      * @param role customer or salesman
      */
     public void printOrderInfo(User user, Role role) {
+        System.out.println("============= ORDER INFO ===============");
         for (OrderDetails orderDetail : OnlineMarketDemo.orderDetails) {
-            if(role.equals(Role.SALESMAN)){
+            if (role.equals(Role.SALESMAN)) {
                 for (Map.Entry<Product, Double> productQtyEntry : orderDetail.getProducts().entrySet()) {
-                    if(productQtyEntry.getKey().getSeller().equals(user)){
+                    if (productQtyEntry.getKey().getSeller().equals(user)) {
                         System.out.println(orderDetail);
                     }
                 }
-            }
-            else if(role.equals(Role.CUSTOMER)){
-                if(orderDetail.getOrder().getCustomer().equals(user)){
+            } else if (role.equals(Role.CUSTOMER)) {
+                if (orderDetail.getOrder().getCustomer().equals(user)) {
+                    // TODO: 11/30/2021 needs to be overridden to print in a custom format
                     System.out.println(orderDetail);
                 }
             }
@@ -458,73 +461,91 @@ public class DemonstrationServiceImpl implements DemonstrationService {
     /**
      * Print product ID, name, and quantity for all products in all categories
      */
-    public void printProductInfo(){
+    public Map<Product, Double> printProductInfo() {
+        System.out.println("============ PRODUCTS ==============");
+        System.out.println(String.format("%1$-6s", "Index") + " |\t"+ String.format("%1$-15s", "Name") + " | Available in stock (pcs)");
         for (Map.Entry<Product, Double> prodWithQty : OnlineMarketDemo.products.entrySet()) {
-            System.out.println(prodWithQty.getKey().getId() + ". " + prodWithQty.getKey().getName() + " \t|\t " + prodWithQty.getValue());
+            System.out.println(String.format("%1$-6s", prodWithQty.getKey().getId()) + " | " + String.format("%1$-15s", prodWithQty.getKey().getName())  + " | " + prodWithQty.getValue());
         }
+        return OnlineMarketDemo.products;
     }
 
 
     /**
      * Print product ID, name, and quantity for all products in the given category
      */
-    public void printProductInfo(Category userCategory) {
+    public Map<Product, Double> printProductInfo(Category userCategory) {
+        Map<Product, Double> productsCategory = new HashMap<>();
+        System.out.println("============ PRODUCTS ==============");
+        System.out.println(String.format("%1$-6s", "Index") + " |\t"+ String.format("%1$-15s", "Name") + " | Available in stock (pcs)");
         for (Map.Entry<Product, Double> prodWithQty : OnlineMarketDemo.products.entrySet()) {
-            if(userCategory.equals(prodWithQty.getKey().getCategory())){
-                System.out.println(prodWithQty.getKey().getId() + ". " + prodWithQty.getKey().getName() + " \t|\t " + prodWithQty.getValue());
+            if (userCategory.equals(prodWithQty.getKey().getCategory())) {
+                productsCategory.put(prodWithQty.getKey(), prodWithQty.getValue());
+                System.out.println(String.format("%1$-6s", prodWithQty.getKey().getId()) + " | " + String.format("%1$-15s", prodWithQty.getKey().getName())  + " | " + prodWithQty.getValue());
             }
         }
+        return productsCategory;
     }
 
     /**
      * Print product ID, name, and quantity for all products in all categories for the given seller
      */
-    public void printProductInfo(User seller){
+    public Map<Product, Double> printProductInfo(User seller) {
+        Map<Product, Double> productsSeller = new HashMap<>();
+        System.out.println("============ PRODUCTS ==============");
+        System.out.println(String.format("%1$-6s", "Index") + " | "+ String.format("%1$-15s", "Name") + " | Available in stock (pcs)");
         for (Map.Entry<Product, Double> prodWithQty : OnlineMarketDemo.products.entrySet()) {
-            if(prodWithQty.getKey().getSeller().equals(seller)){
-                System.out.println(prodWithQty.getKey().getId() + ". " + prodWithQty.getKey().getName() + " \t|\t " + prodWithQty.getValue());
+            if (prodWithQty.getKey().getSeller().equals(seller)) {
+                System.out.println(String.format("%1$-6s", prodWithQty.getKey().getId()) + " | " + String.format("%1$-15s", prodWithQty.getKey().getName())  + " | " + prodWithQty.getValue());
+                productsSeller.put(prodWithQty.getKey(), prodWithQty.getValue());
             }
         }
+        return productsSeller;
     }
 
 
     /**
      * Print product ID, name, and quantity for all products in the given category and seller
      */
-    public void printProductInfo(User seller, Category category) {
+    public Map<Product, Double> printProductInfo(User seller, Category category) {
+        Map<Product, Double> productsSellerCategory = new HashMap<>();
+        System.out.println("============ PRODUCTS ==============");
+        System.out.println(String.format("%1$-6s", "Index") + " | "+ String.format("%1$-15s", "Name") + " | Available in stock (pcs)");
         for (Map.Entry<Product, Double> prodWithQty : OnlineMarketDemo.products.entrySet()) {
-            if(prodWithQty.getKey().getCategory().equals(category) && prodWithQty.getKey().getSeller().equals(seller)){
-                System.out.println(prodWithQty.getKey().getId() + ". " + prodWithQty.getKey().getName() + " \t|\t " + prodWithQty.getValue());
+            if (prodWithQty.getKey().getCategory().equals(category) && prodWithQty.getKey().getSeller().equals(seller)) {
+                System.out.println(String.format("%1$-6s", prodWithQty.getKey().getId()) + " | " + String.format("%1$-15s", prodWithQty.getKey().getName())  + " | " + prodWithQty.getValue());
+                productsSellerCategory.put(prodWithQty.getKey(), prodWithQty.getValue());
             }
         }
+        return productsSellerCategory;
     }
 
     public void printCategoryInfo() {
-        System.out.println("---ALL CATEGORY INFO---");
-        System.out.println("Index \t|\t Name \t|\t Description");
+        System.out.println("========= ALL CATEGORIES ===========");
+        System.out.println(String.format("%1$-6s", "Index") + " | "+ String.format("%1$-15s", "Name") + " | Description");
         for (Category category : OnlineMarketDemo.categories) {
-            System.out.println(category.getId() + "\t|\t" + category.getName() + "\t|\t" + category.getDescription());
+            System.out.println(String.format("%1$-6s", category.getId()) + " | " + String.format("%1$-15s", category.getName())  + " | " + category.getDescription());
         }
     }
 
     public Category addNewCategory() {
-        System.out.println("---NEW CATEGORY ENTRY---");
+        System.out.println("======= NEW CATEGORY ENTRY =========");
         scanner = new Scanner(System.in);
         String catName = "";
         int counter = 3;
-        while (catName.isEmpty() && --counter > 0 ){
+        while (catName.isEmpty() && --counter > 0) {
             System.out.print("Category name: ");
             catName = scanner.nextLine();
-            if(counter == 1){
-                catName = "New Category " + (OnlineMarketDemo.categories.size()+1);
+            if (counter == 1) {
+                catName = "New Category " + (OnlineMarketDemo.categories.size() + 1);
             }
         }
         String catDesc = "";
         counter = 3;
-        while (catDesc.isEmpty() && --counter > 0){
+        while (catDesc.isEmpty() && --counter > 0) {
             System.out.println("Enter category description: ");
             catDesc = scanner.nextLine();
-            if(counter == 1){
+            if (counter == 1) {
                 catDesc = "No description";
             }
         }
