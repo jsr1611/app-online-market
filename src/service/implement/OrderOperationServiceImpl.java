@@ -70,10 +70,14 @@ public class OrderOperationServiceImpl implements OrderOperationService {
         paymentStatus = false;
         scanner = new Scanner(System.in);
         System.out.println("=====================YOUR ORDER=====================");
+
+        order = new Order(OnlineMarketDemo.orderDetails.size()+1L, user, OrderStatus.NEW, shoppingCart.getTotalAmount());
+        details = new OrderDetails(order.getId(), order, shoppingCart.getProducts());
         System.out.println(details);
-        if(order == null){
-            order = details.getOrder();
-        }
+//        if(order == null){
+//            order = details.getOrder();
+//        }
+        order.setTotalPrice(shoppingCart.getTotalAmount());
         while (true) {
             System.out.println("Payment methods\n" +
                     "1. UzCard\n" +
@@ -82,34 +86,42 @@ public class OrderOperationServiceImpl implements OrderOperationService {
                     "4. Cash");
 
             System.out.print("Please, choose your payment method: ");
-            int choice = scanner.nextInt();
             PaymentMethod paymentMethod = null;
-            switch (choice) {
-                case 1:
-                    paymentMethod = user.getPaymentMethodByCardType(CardType.UzCard);
-                    if (paymentMethod == null) {
-                        paymentMethod = getNewPaymentMethod();
+            int choice = -1;
+            try {
+                while (choice < 0 || choice > 4) {
+                    scanner = new Scanner(System.in);
+                    choice = scanner.nextInt();
+                    switch (choice) {
+                        case 1:
+                            paymentMethod = user.getPaymentMethodByCardType(CardType.UzCard);
+                            if (paymentMethod == null) {
+                                paymentMethod = getNewPaymentMethod();
+                            }
+                            break;
+                        case 2:
+                            paymentMethod = user.getPaymentMethodByCardType(CardType.Humo);
+                            if (paymentMethod == null) {
+                                paymentMethod = getNewPaymentMethod();
+                            }
+                            break;
+                        case 3:
+                            paymentMethod = user.getPaymentMethodByCardType(CardType.VISA, CardType.Master);
+                            if (paymentMethod == null) {
+                                paymentMethod = getNewPaymentMethod();
+                            }
+                            break;
+                        case 4:
+                            System.out.println("Your payment method: cash");
+                            order.setOrderStatus(OrderStatus.PAYMENT_SUCCESS);
+                            System.out.println("Payment was successful!");
+                            paymentStatus = true;
                     }
-                    break;
-                case 2:
-                    paymentMethod = user.getPaymentMethodByCardType(CardType.Humo);
-                    if (paymentMethod == null) {
-                        paymentMethod = getNewPaymentMethod();
-                    }
-                    break;
-                case 3:
-                    paymentMethod = user.getPaymentMethodByCardType(CardType.VISA, CardType.Master);
-                    if (paymentMethod == null) {
-                        paymentMethod = getNewPaymentMethod();
-                    }
-                    break;
-                case 4:
-                    System.out.println("Your payment method: cash");
-                    order.setOrderStatus(OrderStatus.PAYMENT_SUCCESS);
-                    System.out.println("Payment was successful!");
-                    paymentStatus = true;
+                }
+            }catch (Exception e){
+                e.printStackTrace();
             }
-            if(choice!= 4){
+            if(choice!= 4 && paymentMethod != null){
                 paymentStatus = payByCard(paymentMethod);
             }
             return paymentStatus;
@@ -129,7 +141,7 @@ public class OrderOperationServiceImpl implements OrderOperationService {
 
             System.out.print("Enter first two digits of your card password: ");
             String password = scanner.next();
-            if (password.length() == 2 && user.getAccount().getPassword().toString().startsWith(password)) {
+            if (password.length() == 2 && user.getAccount().getPassword().toString().substring(0,2).equals(password)) {
                 if (user.getAccount().getBalance() > order.getTotalPrice()) {
                     user.getAccount().addBalance(-1 * order.getTotalPrice());
                     order.setOrderStatus(OrderStatus.PAYMENT_SUCCESS);
@@ -159,60 +171,66 @@ public class OrderOperationServiceImpl implements OrderOperationService {
         Integer month = 0, year = 0;
         String cardHolderName;
         CardType cardType;
+        int counter = 3;
+        boolean savePaymentInfo = false;
+        while (paymentMethod == null && --counter > 0) {
+            try {
+                scanner = new Scanner(System.in);
+                System.out.print("Enter your card number: ");
+                cardNum = scanner.nextLong();
+                //System.out.print("Enter last two digits of your card password: ");
+                //password = scanner.nextInt();
+                if (cardNum.toString().startsWith("8600")) {
+                    cardType = CardType.UzCard;
+                } else if (cardNum.toString().startsWith("4")) {
+                    cardType = CardType.VISA;
+                } else if (cardNum.toString().startsWith("5")) {
+                    cardType = CardType.Master;
+                } else {
+                    cardType = CardType.Humo;
+                }
+                scanner = new Scanner(System.in);
+                System.out.print("Enter the name on your card: ");
+                cardHolderName = scanner.nextLine();
+                scanner = new Scanner(System.in);
+                System.out.print("Enter the expiration month: ");
+                month = scanner.nextInt();
+                //int tries = 3;
+                //System.out.println("Please, keep in mind that after 3 unsuccessfull attempts, your bank account will be blocked! You have " + tries + " left attempts!");
+                while (month < 1 || month > 12) {
+                    System.out.println("Incorrect month entry!");
+                    System.out.print("Enter the expiration month: ");
+                    month = scanner.nextInt();
 
-        System.out.print("Enter your card number: ");
-        cardNum = scanner.nextLong();
-        //System.out.print("Enter last two digits of your card password: ");
-        //password = scanner.nextInt();
-        if(cardNum.toString().startsWith("8600")){
-            cardType = CardType.UzCard;
-        }
-        else if(cardNum.toString().startsWith("4")){
-            cardType = CardType.VISA;
-        }
-        else if(cardNum.toString().startsWith("5")){
-            cardType = CardType.Master;
-        }
-        else {
-            cardType = CardType.Humo;
-        }
-        scanner = new Scanner(System.in);
-        System.out.print("Enter the name on your card: ");
-        cardHolderName = scanner.nextLine();
-        scanner = new Scanner(System.in);
-        System.out.print("Enter the expiration month: ");
-        month = scanner.nextInt();
-        //int tries = 3;
-        //System.out.println("Please, keep in mind that after 3 unsuccessfull attempts, your bank account will be blocked! You have " + tries + " left attempts!");
-        while (month < 1 || month > 12){
-            System.out.println("Incorrect month entry!");
-            System.out.print("Enter the expiration month: ");
-            month = scanner.nextInt();
+                }
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
 
-        }
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                int currentYear = Integer.parseInt(format.format(new Date()).split("-")[0]);
+                int currentMonth = Integer.parseInt(format.format(new Date()).split("-")[1]);
+                System.out.print("Enter the expiration year: ");
+                year = scanner.nextInt();
+                while (year < currentYear || (year == currentYear && month < currentMonth)) {
+                    System.out.println("Incorrect year entry!");
+                    System.out.print("Enter the expiration year: ");
+                    year = scanner.nextInt();
+                }
+                System.out.print("Do you want to save payment info for future use? 'Y' for 'yes': ");
+                scanner = new Scanner(System.in);
+                String userResponse = scanner.next();
+                savePaymentInfo = userResponse.contains("Y") || userResponse.contains("y");
 
-        int currentYear = Integer.parseInt(format.format(new Date()).split("-")[0]);
-        int currentMonth = Integer.parseInt(format.format(new Date()).split("-")[1]);
-        System.out.print("Enter the expiration year: ");
-        year = scanner.nextInt();
-        while (year < currentYear || (year == currentYear && month < currentMonth)) {
-            System.out.println("Incorrect year entry!");
-            System.out.print("Enter the expiration year: ");
-            year = scanner.nextInt();
+                paymentMethod = new PaymentMethod(
+                        cardHolderName,
+                        cardNum,
+                        month,
+                        year,
+                        cardType
+                );
+            } catch (Exception e) {
+                //e.printStackTrace();
+                System.out.println("There was an error in input, please try again!");
+            }
         }
-        System.out.print("Do you want to save payment info for future use? 'Y' for 'yes': ");
-        scanner = new Scanner(System.in);
-        String userResponse = scanner.next();
-        boolean savePaymentInfo = userResponse.contains("Y") || userResponse.contains("y");
-
-        paymentMethod = new PaymentMethod(
-                cardHolderName,
-                cardNum,
-                month,
-                year,
-                cardType
-        );
 
         if(savePaymentInfo){
             OnlineMarketDemo.currentUser.addPaymentMethod(paymentMethod);

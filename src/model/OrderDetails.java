@@ -49,7 +49,7 @@ public class OrderDetails {
     @Override
     public String toString() {
         StringBuilder productStr = new StringBuilder();
-        int counter = 0;
+        int counter = 1;
         Product product = null;
         Double quantity = null;
         Double totalPrice = null;
@@ -57,20 +57,40 @@ public class OrderDetails {
             product = prod.getKey();
             quantity = prod.getValue();
             totalPrice = product.getPrice() * quantity;
-            productStr.append(counter++)
-                    .append(". Order ")
-                    .append(order.getId())
-                    .append("\t")
-                    .append(product.getName())
-                    .append("\t")
-                    .append(quantity)
-                    .append(" pcs\t")
-                    .append(totalPrice)
-                    .append("\n");
+            productStr.append(String.format("Order %1$-5s ", order.getId()))
+                    .append(String.format("%1$-15s quantity: ",product.getName()))
+                    .append(String.format("%1$5s pcs ",quantity))
+                    .append(String.format("%1$10s", totalPrice));
+            if(counter <= products.size()){
+                productStr.append("\n");
+            }
         }
         // 1. Order 1   iPhone 13   1 pcs      1300.0
         // 2. Order 1   Samsung
         // TODO: 11/30/2021 Improve the printing format
+        return productStr.toString();
+    }
+
+    public String toString(User seller) {
+        StringBuilder productStr = new StringBuilder();
+        int counter = 1;
+        Product product = null;
+        Double quantity = null;
+        Double totalPrice = null;
+        for(Map.Entry<Product, Double> prod: products.entrySet()){
+            product = prod.getKey();
+            quantity = prod.getValue();
+            totalPrice = product.getPrice() * quantity;
+            if(product.getSeller().equals(seller)) {
+                productStr.append(String.format("Order %1$-5s ", order.getId()))
+                        .append(String.format("%1$-15s quantity: ", product.getName()))
+                        .append(String.format("%1$5s pcs ", quantity))
+                        .append(String.format("%1$10s", totalPrice));
+                if (counter <= products.size()) {
+                    productStr.append("\n");
+                }
+            }
+        }
         return productStr.toString();
     }
 

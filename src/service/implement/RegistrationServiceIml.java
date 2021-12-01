@@ -1,6 +1,7 @@
 package service.implement;
 
 import enums.Role;
+import javafx.animation.ScaleTransition;
 import model.Account;
 import model.User;
 import realization.OnlineMarketDemo;
@@ -85,21 +86,27 @@ public class RegistrationServiceIml implements RegistrationService {
     @Override
     public boolean signIn() {
         scanner = new Scanner(System.in);
-        System.out.print("Email: ");
-        String email = scanner.next();
-        while (!validateEmail(email)){
-            System.out.println("Wrong email format!");
+        try {
             System.out.print("Email: ");
-            email = scanner.next();
-        }
-        System.out.print("Password: ");
-        String password = scanner.next();
-
-        for (User user : OnlineMarketDemo.users) {
-            if (user.getEmail().equals(email) && user.getPassword().equals(password)) {
-                OnlineMarketDemo.currentUser = user;
-                return true;
+            String email = scanner.next();
+            while (!validateEmail(email)) {
+                System.out.println("Wrong email format!");
+                System.out.print("Email: ");
+                email = scanner.next();
             }
+            System.out.print("Password: ");
+            String password = scanner.next();
+
+            for (User user : OnlineMarketDemo.users) {
+                if (user.getEmail().equals(email) && user.getPassword().equals(password)) {
+                    OnlineMarketDemo.currentUser = user;
+                    return true;
+                }
+            }
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
         }
         return false;
     }

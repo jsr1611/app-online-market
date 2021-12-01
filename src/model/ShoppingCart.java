@@ -61,11 +61,15 @@ public class ShoppingCart {
             products.forEach((prod, qty) -> {
                 if (prod.equals(product)) {
                     qty += qtyToAdd;
+                    products.replace(prod, qty);
+                    totalAmount += prod.getPrice() * qtyToAdd;
+
                 }
             });
         }
         else {
             products.put(product, qtyToAdd);
+            totalAmount+= product.getPrice() * qtyToAdd;
         }
         System.out.println("Product was successfully added to the cart.");
     }
@@ -73,14 +77,22 @@ public class ShoppingCart {
     @Override
     public String toString() {
         StringBuilder prods = new StringBuilder();
-        for (Map.Entry<Product, Double> productIntegerEntry : products.entrySet()) {
-            prods.append(productIntegerEntry.getKey().getName()).append(", quantity: ").append(productIntegerEntry.getValue().toString()).append("\n");
+        Product product;
+        Double quantity;
+        int counter = 1;
+        for (Map.Entry<Product, Double> productsEntry : products.entrySet()) {
+            product = productsEntry.getKey();
+            quantity = productsEntry.getValue();
+            prods.append(counter++)
+                    .append(String.format(". %1$-15s",product.getName()))
+                    .append(String.format("\t quantity: %1$-5s",quantity))
+                    .append("\t price: ")
+                    .append(product.getPrice())
+                    .append("\n");
         }
 
-        // TODO: 11/30/2021 improve the printing format
-        return "Id: " + id +
-                ", \ncustomer id: " + customerId +
-                ", \nproducts: " +  prods +
-                ", \ntotal amount: " + totalAmount;
+        return "Shopping Cart " +
+                "\nProducts:\n" +  prods +
+                "Total amount: " + totalAmount;
     }
 }

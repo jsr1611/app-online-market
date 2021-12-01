@@ -66,6 +66,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public Boolean updateQuantity(Product product, Double quantity) {
+        if(quantity == 0){
+            return false;
+        }
         for (Map.Entry<Product, Double> prodWithQty : OnlineMarketDemo.products.entrySet()) {
             if(prodWithQty.getKey().equals(product)){
                 Double currentQty = prodWithQty.getValue();

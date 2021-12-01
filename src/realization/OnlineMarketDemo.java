@@ -23,6 +23,8 @@ public class OnlineMarketDemo {
     public static List<Category> categories = new ArrayList<>();
     public static Map<Category, Category> subCategories = new HashMap<>();
     public static Map<Product, Double> products = new LinkedHashMap<>();
+    public static Map<User, List<User>> customers = new HashMap<>();
+    //user list per customer
     /**
      * orders, orderDetails, shoppingCarts - larga RUNTIME da load bo'ladi
      */
@@ -88,22 +90,27 @@ public class OnlineMarketDemo {
         products.put(
                 new Product(2L, "Samsung Laptop", electronics, pc, 1500.0, seller2),
                 10.0);
-        int choice;
-        do {
+        int choice = -1;
+        while (choice != 0){
             showMainMenu();
-            choice = scanner.nextInt();
-            switch (choice) {
-                case 1:
-                    signIn();
-                    break;
-                case 2:
-                    signUp();
-                    break;
-                default:
-                    System.out.println("Incorrect option!");
+            try {
+                scanner = new Scanner(System.in);
+                choice = scanner.nextInt();
+                switch (choice) {
+                    case 1:
+                        signIn();
+                        break;
+                    case 2:
+                        signUp();
+                        break;
+                    default:
+                        System.out.println("Incorrect option!");
+                }
+            }catch (InputMismatchException e){
+                e.printStackTrace();
+                System.out.println("Enter correct menu option, please!");
             }
-
-        } while (choice != 0);
+        } //while (choice != 0);
     }
 
     private static void signUp() {
@@ -119,8 +126,8 @@ public class OnlineMarketDemo {
     private static void signIn() {
         registrationService = new RegistrationServiceIml();
         boolean isSuccess = registrationService.signIn();
-        currentUser.setSignedIn(isSuccess);
         if (isSuccess) {
+            currentUser.setSignedIn(isSuccess);
             demonstrationService = new DemonstrationServiceImpl();
             while (currentUser.getSignedIn()) {
                 switch (currentUser.getRole()) {

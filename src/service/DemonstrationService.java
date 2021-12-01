@@ -19,7 +19,7 @@ public interface DemonstrationService {
 
     void showDirectorMenu();
 
-    void showOrders(Order order, Role role);
+    void showOrders(Role role);
 
     void showShoppingCart(ShoppingCart cart, Role userRole);
 

@@ -21,11 +21,14 @@ public class DemonstrationServiceImpl implements DemonstrationService {
     static CategoryService categoryService = new CategoryServiceImpl();
     static ProductService productService = new ProductServiceImpl();
     static OrderOperationServiceImpl orderService = new OrderOperationServiceImpl();
-    Order myOrder;
-    OrderDetails myOrderDetails;
+//    Order myOrder;
+//    OrderDetails myOrderDetails;
     ShoppingCart myCart;
     List<Category> categories; // = OnlineMarketDemo.categories;
     Map<Product, Double> availableProducts; // = OnlineMarketDemo.products;
+    Map<User, List<User>> customers;
+    Product product;
+    Double quantity, price;
 
 
     @Override
@@ -36,6 +39,9 @@ public class DemonstrationServiceImpl implements DemonstrationService {
         }
         if(availableProducts == null){
             availableProducts = OnlineMarketDemo.products;
+        }
+        if(customers == null){
+            customers = OnlineMarketDemo.customers;
         }
 
         Long customerId = OnlineMarketDemo.currentUser.getId();
@@ -52,6 +58,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 myCart = shoppingCart;
                 productsToBuy = shoppingCart.getProducts();
                 totalAmount = shoppingCart.getTotalAmount();
+                System.out.println("You had uncompleted orders in your cart!");
             }
         }
 
@@ -61,14 +68,15 @@ public class DemonstrationServiceImpl implements DemonstrationService {
             productsToBuy = new HashMap<>();
             totalAmount = 0.0;
             OnlineMarketDemo.shoppingCarts.add(myCart);
+            System.out.println("Welcome to our shopping mall, " + OnlineMarketDemo.currentUser.getFullName());
         }
         Long orderId = OnlineMarketDemo.orderDetails.size() + 1L;
         scanner = new Scanner(System.in);
 
 
 
-        myOrder = new Order(orderId, OnlineMarketDemo.currentUser, OrderStatus.NEW, totalAmount);
-        myOrderDetails = new OrderDetails(orderId, myOrder, productsToBuy);
+//        myOrder = new Order(orderId, OnlineMarketDemo.currentUser, OrderStatus.NEW, 0.0);
+//        myOrderDetails = new OrderDetails(orderId, myOrder, productsToBuy);
 
         while (OnlineMarketDemo.currentUser.getSignedIn()) {
             System.out.println("============ CUSTOMER FORM ==============");
@@ -96,7 +104,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                         if(choiceStr.equals("v"))
                             showShoppingCart(myCart, Role.CUSTOMER);
                         else if(choiceStr.equals("o"))
-                            showOrders(myOrder, Role.CUSTOMER);
+                            showOrders(Role.CUSTOMER);
                         cancelOption = true;
                         break;
                     default:
@@ -111,6 +119,8 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 break;
             } else {
                 if(!availableProducts.isEmpty()) {
+                    // TODO: 12/2/21 display products with new IDs starting from 1
+                    // TODO: 12/2/21 when user enters id other outside the range available on the display, ask again to enter id for 3 times until exiting the menu.
                     System.out.print("Enter product id to add it to shopping cart or anything else to return to previous menu: ");
                     scanner = new Scanner(System.in);
                     choiceStr = scanner.next();
@@ -120,27 +130,39 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                         if (productToBuy != null) {
                             System.out.print("Enter the quantity to buy: ");
 
-                            double quantity = scanner.nextDouble();
+                            double quantityToBuy = scanner.nextDouble();
                             Double stockAvailable = productToBuy.getValue();
                             int counter = 3;
-                            while (quantity > stockAvailable && --counter > 0) {
+                            while (quantityToBuy > stockAvailable && --counter > 0) {
                                 System.out.println("Not enough stock! You can buy only : " + stockAvailable + " (pcs)");
                                 System.out.print("Enter the quantity to buy: ");
-                                quantity = scanner.nextInt();
+                                quantityToBuy = scanner.nextInt();
                             }
 
-                            if(quantity < stockAvailable){
-                                myCart.addProduct(productToBuy.getKey(), quantity);
-                                productsToBuy.put(productToBuy.getKey(), quantity);
-                                totalAmount += quantity * productToBuy.getKey().getPrice();
-                                Double cartTotalAmount = myCart.getTotalAmount();
-                                myCart.setTotalAmount(cartTotalAmount + totalAmount);
-                                Double orderAmount = myOrder.getTotalPrice();
-                                myOrder.setTotalPrice(orderAmount + totalAmount);
-                                myOrderDetails.setOrder(myOrder);
-                                orderService.setDetails(myOrderDetails);
-                                productService.updateQuantity(productToBuy.getKey(), (-1) * quantity);
+                            if(quantityToBuy < stockAvailable && quantityToBuy > 0){
+                                myCart.addProduct(productToBuy.getKey(), quantityToBuy);
+//                                if(productsToBuy.containsKey(productToBuy.getKey())){
+//                                    Double prevQuantity = productsToBuy.get(productToBuy.getKey());
+//                                    System.out.println("You had already added " + productToBuy.getKey().getName() + " in the quantity of " + prevQuantity + " to your cart.");
+//                                    productsToBuy.remove(productToBuy.getKey());
+//                                    productsToBuy.put(productToBuy.getKey(), prevQuantity + quantityToBuy);
+//                                    System.out.println("Now you have " + myCart.getProducts().get(productToBuy.getKey()) + " pcs of " + productToBuy.getKey().getName());
+//                                }
+//                                else {
+//                                    productsToBuy.put(productToBuy.getKey(), quantityToBuy);
+//                                }
+
+                                //totalAmount += quantityToBuy * productToBuy.getKey().getPrice();
+//                                Double cartTotalAmount = myCart.getTotalAmount();
+//                                myCart.setTotalAmount(cartTotalAmount + totalAmount);
+//                                Double orderAmount = myOrder.getTotalPrice();
+//                                myOrder.setTotalPrice(orderAmount + totalAmount);
+                                //myOrderDetails.setOrder(myOrder);
+                                //orderService.setDetails(myOrderDetails);
+                                orderService.setShoppingCart(myCart);
+                                productService.updateQuantity(productToBuy.getKey(), (-1) * quantityToBuy);
                             }
+
                         }
                         //System.out.println("Product was added to the shopping cart");
                     } catch (Exception e) {
@@ -158,7 +180,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 
 
     @Override
-    public void showOrders(Order myOrder, Role role) {
+    public void showOrders(Role role) {
         scanner = new Scanner(System.in);
         if (role.equals(Role.CUSTOMER)) {
             for (OrderDetails orderDetail : OnlineMarketDemo.orderDetails) {
@@ -167,8 +189,8 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 }
             }
         } else if (role.equals(Role.DIRECTOR)) {
-            for (OrderDetails order : OnlineMarketDemo.orderDetails) {
-                System.out.println(order);
+            for (OrderDetails orderDetail : OnlineMarketDemo.orderDetails) {
+                System.out.println(orderDetail);
             }
         } else if (role.equals(Role.SALESMAN)) {
             for (OrderDetails orderDetail : OnlineMarketDemo.orderDetails) {
@@ -200,8 +222,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                         //order complete bo`lganidan keyingina qo`shilsin!
                         //OnlineMarketDemo.orders.add(myOrder);
                         //myOrderDetails.setProducts(mycart.getProducts());
-                        OnlineMarketDemo.orderDetails.add(myOrderDetails);
-
+                        OnlineMarketDemo.orderDetails.add(orderService.getDetails());
 
                         OnlineMarketDemo.shoppingCarts.remove(mycart);
                         myCart = new ShoppingCart(mycart.getId() + 1, OnlineMarketDemo.currentUser.getId());
@@ -292,7 +313,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                         category = addNewCategory();
 
                     } else {
-                        category = categoryService.findById(innerChoice - 1);
+                        category = categoryService.findById(innerChoice);
                     }
 
                     // TODO: 11/30/2021 Subcategory logic needs to be put here
@@ -308,20 +329,20 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 //
 //                }
                     System.out.print("Price: ");
-                    Double price = scanner.nextDouble();
+                    Double initialPrice = scanner.nextDouble();
                     System.out.print("Quantity: ");
-                    Double quantity = scanner.nextDouble();
+                    Double initialQuantity = scanner.nextDouble();
                     Long prodId = OnlineMarketDemo.products.size() + 1L;
-                    Product product = new Product(
+                    Product productToAdd = new Product(
                             prodId,
                             name,
                             category,
                             null,
-                            price,
+                            initialPrice,
                             OnlineMarketDemo.currentUser
                     );
-                    productService.addProduct(product, quantity);
-                    System.out.println("Product " + product.getName() + " ( quantity: " + quantity+  ") was successfully added to the list.");
+                    productService.addProduct(productToAdd, initialQuantity);
+                    System.out.println("Product " + productToAdd.getName() + " ( quantity: " + initialQuantity+  ") was successfully added for sale in the category " + category.getName() + " for the initial price of " + initialPrice + " (each).");
                     break;
                 case 2:             // update product price
                 case 3:              // delete product
@@ -404,12 +425,18 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                     printOrderInfo(OnlineMarketDemo.currentUser, Role.SALESMAN);
                     break;
                 case 10:
-                    // TODO: 11/30/2021 Need to improve the printing format
-                    System.out.println("ID \t|\t Name \t|\t Order Amount \t|\t");
+                    User seller = OnlineMarketDemo.currentUser;
+                    System.out.println(String.format("%1$-6s", "ID") + String.format("%1$-20s", "Name") + String.format("%1$-15s", "Order Amount") + String.format("%1$-15s", "Product") + String.format("%1$-6s", "Qty"));
                     for (OrderDetails order : OnlineMarketDemo.orderDetails) {
                         User customer = order.getOrder().getCustomer();
+                        for (Map.Entry<Product, Double> productDoubleEntry : order.getProducts().entrySet()) {
+                            Double totalOrderAmount = productDoubleEntry.getValue() * productDoubleEntry.getKey().getPrice();
+                            if(productDoubleEntry.getKey().getSeller().equals(seller)){
+                                System.out.println(String.format("%1$-6s", customer.getId()) + String.format("%1$-20s", customer.getFullName()) + String.format("%1$-15s",totalOrderAmount) + String.format("%1$-15s",productDoubleEntry.getKey().getName()) + String.format("%1$-6s",productDoubleEntry.getValue()));
+                            }
+                        }
                         // TODO: 11/30/21 need to create customer list for the salesman
-                        System.out.println(customer.getId() + " \t|\t " + customer.getFullName() + " \t|\t " + order.getOrder().getTotalPrice());
+
                     }
                     break;
                 case 0:
@@ -436,7 +463,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
 
 
     /**
-     * Print order details for all orders for the given user role
+     * Print order details for all orders or current order (customer's case) for the given user role
      *
      * @param user user
      * @param role customer or salesman
@@ -444,22 +471,24 @@ public class DemonstrationServiceImpl implements DemonstrationService {
     public void printOrderInfo(User user, Role role) {
         System.out.println("============= ORDER INFO ===============");
         int counter = 0;
-        for (OrderDetails orderDetail : OnlineMarketDemo.orderDetails) {
-            if (role.equals(Role.SALESMAN)) {
+        if (role.equals(Role.SALESMAN)) {
+            for (OrderDetails orderDetail : OnlineMarketDemo.orderDetails) {
                 for (Map.Entry<Product, Double> productQtyEntry : orderDetail.getProducts().entrySet()) {
-                    if (productQtyEntry.getKey().getSeller().equals(user)) {
-                        System.out.println(orderDetail);
+                    product = productQtyEntry.getKey();
+                    if (product.getSeller().equals(user)) {
+                        System.out.println(orderDetail.toString(user));
                         counter++;
+                        break;
                     }
                 }
-
-            } else if (role.equals(Role.CUSTOMER)) {
-                if (orderDetail.getOrder().getCustomer().equals(user)) {
-                    // TODO: 11/30/2021 needs to be overridden to print in a custom format
+            }
+        }
+        else if (role.equals(Role.CUSTOMER)) {
+                OrderDetails orderDetail = orderService.getDetails();
+                if(orderDetail != null){
                     System.out.println(orderDetail);
                     counter++;
                 }
-            }
         }
         if(counter == 0){
             System.out.println("No orders were placed so far.");
@@ -472,9 +501,12 @@ public class DemonstrationServiceImpl implements DemonstrationService {
      */
     public Map<Product, Double> printProductInfo() {
         System.out.println("============ PRODUCTS ==============");
-        System.out.println(String.format("%1$-6s", "Index") + " |\t"+ String.format("%1$-15s", "Name") + " | Available in stock (pcs)");
+        System.out.println(String.format("%1$-6s", "Index") + " | " + String.format("%1$-15s", "Name") + " | " +  String.format("%1$-10s", "Price") + " | Available in stock (pcs)");
         for (Map.Entry<Product, Double> prodWithQty : OnlineMarketDemo.products.entrySet()) {
-            System.out.println(String.format("%1$-6s", prodWithQty.getKey().getId()) + " | " + String.format("%1$-15s", prodWithQty.getKey().getName())  + " | " + prodWithQty.getValue());
+            product = prodWithQty.getKey();
+            quantity = prodWithQty.getValue();
+            price = prodWithQty.getKey().getPrice();
+            System.out.println(String.format("%1$-6s", product.getId()) + " | " + String.format("%1$-15s", product.getName()) + " | " + String.format("%1$-10s", price)  + " | " + quantity);
         }
         return OnlineMarketDemo.products;
     }
@@ -486,11 +518,14 @@ public class DemonstrationServiceImpl implements DemonstrationService {
     public Map<Product, Double> printProductInfo(Category userCategory) {
         Map<Product, Double> productsCategory = new HashMap<>();
         System.out.println("============ PRODUCTS ==============");
-        System.out.println(String.format("%1$-6s", "Index") + " |\t"+ String.format("%1$-15s", "Name") + " | Available in stock (pcs)");
+        System.out.println(String.format("%1$-6s", "Index") + " | " + String.format("%1$-15s", "Name") + " | " +  String.format("%1$-10s", "Price") + " | Available in stock (pcs)");
         for (Map.Entry<Product, Double> prodWithQty : OnlineMarketDemo.products.entrySet()) {
             if (userCategory.equals(prodWithQty.getKey().getCategory())) {
                 productsCategory.put(prodWithQty.getKey(), prodWithQty.getValue());
-                System.out.println(String.format("%1$-6s", prodWithQty.getKey().getId()) + " | " + String.format("%1$-15s", prodWithQty.getKey().getName())  + " | " + prodWithQty.getValue());
+                product = prodWithQty.getKey();
+                quantity = prodWithQty.getValue();
+                price = prodWithQty.getKey().getPrice();
+                System.out.println(String.format("%1$-6s", product.getId()) + " | " + String.format("%1$-15s", product.getName()) + " | " + String.format("%1$-10s", price)  + " | " + quantity);
             }
         }
         return productsCategory;
@@ -502,11 +537,14 @@ public class DemonstrationServiceImpl implements DemonstrationService {
     public Map<Product, Double> printProductInfo(User seller) {
         Map<Product, Double> productsSeller = new HashMap<>();
         System.out.println("============ PRODUCTS ==============");
-        System.out.println(String.format("%1$-6s", "Index") + " | "+ String.format("%1$-15s", "Name") + " | Available in stock (pcs)");
+        System.out.println(String.format("%1$-6s", "Index") + " | " + String.format("%1$-15s", "Name") + " | " +  String.format("%1$-10s", "Price") + " | Available in stock (pcs)");
         for (Map.Entry<Product, Double> prodWithQty : OnlineMarketDemo.products.entrySet()) {
-            if (prodWithQty.getKey().getSeller().equals(seller)) {
-                System.out.println(String.format("%1$-6s", prodWithQty.getKey().getId()) + " | " + String.format("%1$-15s", prodWithQty.getKey().getName())  + " | " + prodWithQty.getValue());
-                productsSeller.put(prodWithQty.getKey(), prodWithQty.getValue());
+            product = prodWithQty.getKey();
+            quantity = prodWithQty.getValue();
+            price = product.getPrice();
+            if (product.getSeller().equals(seller)) {
+                System.out.println(String.format("%1$-6s", product.getId()) + " | " + String.format("%1$-15s", product.getName()) + " | " + String.format("%1$-10s", price)  + " | " + quantity);
+                productsSeller.put(product, quantity);
             }
         }
         return productsSeller;
@@ -519,11 +557,14 @@ public class DemonstrationServiceImpl implements DemonstrationService {
     public Map<Product, Double> printProductInfo(User seller, Category category) {
         Map<Product, Double> productsSellerCategory = new HashMap<>();
         System.out.println("============ PRODUCTS ==============");
-        System.out.println(String.format("%1$-6s", "Index") + " | "+ String.format("%1$-15s", "Name") + " | Available in stock (pcs)");
+        System.out.println(String.format("%1$-6s", "Index") + " | " + String.format("%1$-15s", "Name") + " | " +  String.format("%1$-10s", "Price") + " | Available in stock (pcs)");
         for (Map.Entry<Product, Double> prodWithQty : OnlineMarketDemo.products.entrySet()) {
-            if (prodWithQty.getKey().getCategory().equals(category) && prodWithQty.getKey().getSeller().equals(seller)) {
-                System.out.println(String.format("%1$-6s", prodWithQty.getKey().getId()) + " | " + String.format("%1$-15s", prodWithQty.getKey().getName())  + " | " + prodWithQty.getValue());
-                productsSellerCategory.put(prodWithQty.getKey(), prodWithQty.getValue());
+            product = prodWithQty.getKey();
+            quantity = prodWithQty.getValue();
+            price = product.getPrice();
+            if (product.getCategory().equals(category) && product.getSeller().equals(seller)) {
+                System.out.println(String.format("%1$-6s", product.getId()) + " | " + String.format("%1$-15s", product.getName()) + " | " + String.format("%1$-10s", price)  + " | " + quantity);
+                productsSellerCategory.put(product, quantity);
             }
         }
         return productsSellerCategory;
