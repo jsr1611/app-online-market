@@ -48,28 +48,30 @@ public class OrderDetails {
 
     @Override
     public String toString() {
-        StringBuilder prods = new StringBuilder();
+        StringBuilder productStr = new StringBuilder();
         int counter = 0;
+        Product product = null;
+        Double quantity = null;
+        Double totalPrice = null;
         for(Map.Entry<Product, Double> prod: products.entrySet()){
-                prods.append(counter++)
-                        .append(". ")
-                        .append("\t")
-                        .append("Order " +  order.getId())
-                        .append("\t")
-                        .append(prod.getKey().getName())
-                        .append("\t")
-                        .append(prod.getValue())
-                        .append("\t")
-                        .append(prod.getKey().getPrice() * prod.getValue())
-                        .append("\n");
+            product = prod.getKey();
+            quantity = prod.getValue();
+            totalPrice = product.getPrice() * quantity;
+            productStr.append(counter++)
+                    .append(". Order ")
+                    .append(order.getId())
+                    .append("\t")
+                    .append(product.getName())
+                    .append("\t")
+                    .append(quantity)
+                    .append(" pcs\t")
+                    .append(totalPrice)
+                    .append("\n");
         }
-
+        // 1. Order 1   iPhone 13   1 pcs      1300.0
+        // 2. Order 1   Samsung
         // TODO: 11/30/2021 Improve the printing format
-
-        return "Order details\n" +
-                "Id: " + id +
-                "\n" + order +
-                "\n" + prods;
+        return productStr.toString();
     }
 
     /*

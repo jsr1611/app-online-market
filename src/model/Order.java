@@ -57,8 +57,7 @@ public class Order {
 
     @Override
     public String toString() {
-        return "Order\n" +
-                "Id: " + id +
+        return "Id: " + id +
                 ", customer: " + customer.getFullName() + "(" + customer.getEmail() + ")" +
                 ", orderStatus: " + orderStatus +
                 ", totalPrice: " + totalPrice;

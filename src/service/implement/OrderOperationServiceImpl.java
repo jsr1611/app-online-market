@@ -22,6 +22,7 @@ public class OrderOperationServiceImpl implements OrderOperationService {
     private ShoppingCart shoppingCart;
     private Scanner scanner;
     private User user = OnlineMarketDemo.currentUser;
+    Boolean paymentStatus;
 
     public OrderOperationServiceImpl(){}
     public OrderOperationServiceImpl(Long id, Order order, OrderDetails details, ShoppingCart shoppingCart) {
@@ -66,8 +67,8 @@ public class OrderOperationServiceImpl implements OrderOperationService {
 
     @Override
     public boolean completeOrder() {
+        paymentStatus = false;
         scanner = new Scanner(System.in);
-        boolean paymentStatus = false;
         System.out.println("=====================YOUR ORDER=====================");
         System.out.println(details);
         if(order == null){
@@ -80,7 +81,6 @@ public class OrderOperationServiceImpl implements OrderOperationService {
                     "3. VISA/Master\n" +
                     "4. Cash");
 
-
             System.out.print("Please, choose your payment method: ");
             int choice = scanner.nextInt();
             PaymentMethod paymentMethod = null;
@@ -89,25 +89,18 @@ public class OrderOperationServiceImpl implements OrderOperationService {
                     paymentMethod = user.getPaymentMethodByCardType(CardType.UzCard);
                     if (paymentMethod == null) {
                         paymentMethod = getNewPaymentMethod();
-
-                    } else {
-                        paymentStatus = payByCard(paymentMethod);
                     }
                     break;
                 case 2:
                     paymentMethod = user.getPaymentMethodByCardType(CardType.Humo);
                     if (paymentMethod == null) {
                         paymentMethod = getNewPaymentMethod();
-                    } else {
-                        paymentStatus = payByCard(paymentMethod);
                     }
                     break;
                 case 3:
                     paymentMethod = user.getPaymentMethodByCardType(CardType.VISA, CardType.Master);
                     if (paymentMethod == null) {
                         paymentMethod = getNewPaymentMethod();
-                    } else {
-                        paymentStatus = payByCard(paymentMethod);
                     }
                     break;
                 case 4:
@@ -125,8 +118,6 @@ public class OrderOperationServiceImpl implements OrderOperationService {
 
     public boolean payByCard(PaymentMethod paymentMethod) {
         System.out.println("Your payment method: " + paymentMethod.getCardType());
-
-        boolean paymentStatus = false;
         int counter = 3;
         while (counter-- > 0 && !paymentStatus) {
             if(counter == 0){
@@ -151,13 +142,17 @@ public class OrderOperationServiceImpl implements OrderOperationService {
             } else {
                 System.out.println("WRONG PASSWORD!!! " +
                         "\nAfter " + counter + " more unsuccessful " +
-                        "attempts your account will be blocked automatically! " +
-                        "\nPLEASE, ENTER YOUR PASSWORD CORRECTLY TO AVOID AUTOMATIC ACCOUNT BLOCKING!\n");
+                        "attempts your account will be blocked automatically!");
             }
         }
         return paymentStatus;
     }
 
+
+    /**
+     * Get new payment data from user
+     * @return payment method such as card payment with all necessary information
+     */
     public PaymentMethod getNewPaymentMethod(){
         PaymentMethod paymentMethod = null;
         Long cardNum;
@@ -199,7 +194,6 @@ public class OrderOperationServiceImpl implements OrderOperationService {
 
         int currentYear = Integer.parseInt(format.format(new Date()).split("-")[0]);
         int currentMonth = Integer.parseInt(format.format(new Date()).split("-")[1]);
-        int today = Integer.parseInt(format.format(new Date()).split("-")[2]);
         System.out.print("Enter the expiration year: ");
         year = scanner.nextInt();
         while (year < currentYear || (year == currentYear && month < currentMonth)) {
@@ -209,7 +203,8 @@ public class OrderOperationServiceImpl implements OrderOperationService {
         }
         System.out.print("Do you want to save payment info for future use? 'Y' for 'yes': ");
         scanner = new Scanner(System.in);
-        boolean savePaymentInfo = scanner.next().contains("Y");
+        String userResponse = scanner.next();
+        boolean savePaymentInfo = userResponse.contains("Y") || userResponse.contains("y");
 
         paymentMethod = new PaymentMethod(
                 cardHolderName,

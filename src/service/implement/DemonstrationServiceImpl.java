@@ -62,7 +62,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
             totalAmount = 0.0;
             OnlineMarketDemo.shoppingCarts.add(myCart);
         }
-        Long orderId = OnlineMarketDemo.orders.size() + 1L;
+        Long orderId = OnlineMarketDemo.orderDetails.size() + 1L;
         scanner = new Scanner(System.in);
 
 
@@ -129,16 +129,18 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                                 quantity = scanner.nextInt();
                             }
 
-                            myCart.addProduct(productToBuy.getKey(), quantity);
-                            totalAmount += quantity * productToBuy.getKey().getPrice();
-                            Double cartTotalAmount = myCart.getTotalAmount();
-                            myCart.setTotalAmount(cartTotalAmount + totalAmount);
-
-                            Double orderAmount = myOrder.getTotalPrice();
-                            myOrder.setTotalPrice(orderAmount + totalAmount);
-
-                            orderService.setDetails(myOrderDetails);
-                            productService.updateQuantity(productToBuy.getKey(), (-1) * quantity);
+                            if(quantity < stockAvailable){
+                                myCart.addProduct(productToBuy.getKey(), quantity);
+                                productsToBuy.put(productToBuy.getKey(), quantity);
+                                totalAmount += quantity * productToBuy.getKey().getPrice();
+                                Double cartTotalAmount = myCart.getTotalAmount();
+                                myCart.setTotalAmount(cartTotalAmount + totalAmount);
+                                Double orderAmount = myOrder.getTotalPrice();
+                                myOrder.setTotalPrice(orderAmount + totalAmount);
+                                myOrderDetails.setOrder(myOrder);
+                                orderService.setDetails(myOrderDetails);
+                                productService.updateQuantity(productToBuy.getKey(), (-1) * quantity);
+                            }
                         }
                         //System.out.println("Product was added to the shopping cart");
                     } catch (Exception e) {
@@ -165,7 +167,7 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 }
             }
         } else if (role.equals(Role.DIRECTOR)) {
-            for (Order order : OnlineMarketDemo.orders) {
+            for (OrderDetails order : OnlineMarketDemo.orderDetails) {
                 System.out.println(order);
             }
         } else if (role.equals(Role.SALESMAN)) {
@@ -196,12 +198,10 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                     boolean orderResult = orderService.completeOrder();
                     if (orderResult) {
                         //order complete bo`lganidan keyingina qo`shilsin!
-                        if (!OnlineMarketDemo.orders.contains(myOrder)) {
-                            OnlineMarketDemo.orders.add(myOrder);
-                        }
-                        if (!OnlineMarketDemo.orderDetails.contains(myOrderDetails)) {
-                            OnlineMarketDemo.orderDetails.add(myOrderDetails);
-                        }
+                        //OnlineMarketDemo.orders.add(myOrder);
+                        //myOrderDetails.setProducts(mycart.getProducts());
+                        OnlineMarketDemo.orderDetails.add(myOrderDetails);
+
 
                         OnlineMarketDemo.shoppingCarts.remove(mycart);
                         myCart = new ShoppingCart(mycart.getId() + 1, OnlineMarketDemo.currentUser.getId());
@@ -406,10 +406,10 @@ public class DemonstrationServiceImpl implements DemonstrationService {
                 case 10:
                     // TODO: 11/30/2021 Need to improve the printing format
                     System.out.println("ID \t|\t Name \t|\t Order Amount \t|\t");
-                    for (Order order : OnlineMarketDemo.orders) {
-                        User customer = order.getCustomer();
+                    for (OrderDetails order : OnlineMarketDemo.orderDetails) {
+                        User customer = order.getOrder().getCustomer();
                         // TODO: 11/30/21 need to create customer list for the salesman
-                        System.out.println(customer.getId() + " \t|\t " + customer.getFullName() + " \t|\t " + order.getTotalPrice());
+                        System.out.println(customer.getId() + " \t|\t " + customer.getFullName() + " \t|\t " + order.getOrder().getTotalPrice());
                     }
                     break;
                 case 0:
