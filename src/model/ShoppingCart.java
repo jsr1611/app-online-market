@@ -77,6 +77,7 @@ public class ShoppingCart {
             prods.append(productIntegerEntry.getKey().getName()).append(", quantity: ").append(productIntegerEntry.getValue().toString()).append("\n");
         }
 
+        // TODO: 11/30/2021 improve the printing format
         return "Id: " + id +
                 ", \ncustomer id: " + customerId +
                 ", \nproducts: " +  prods +

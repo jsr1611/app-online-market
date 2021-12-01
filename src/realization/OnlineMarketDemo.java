@@ -19,7 +19,7 @@ import java.util.*;
 public class OnlineMarketDemo {
 
     public static Scanner scanner = new Scanner(System.in);
-    public static Set<User> users = new HashSet<>();                        // DONE
+    public static Set<User> users = new HashSet<>();
     public static List<Category> categories = new ArrayList<>();
     public static Map<Category, Category> subCategories = new HashMap<>();
     public static Map<Product, Double> products = new HashMap<>();
@@ -78,7 +78,7 @@ public class OnlineMarketDemo {
         // adding 10 pcs of iPhone 13 of phones sub-category inside electronics big category which is 1300$ each
         products.put(
                 new Product(
-                        1L,
+                        2L,
                     "iPhone 13",
                         electronics,
                         phones,
@@ -86,9 +86,8 @@ public class OnlineMarketDemo {
                 10.0);
 
         products.put(
-                new Product(2L, "Samsung Laptop", electronics, pc, 1500.0, seller2),
+                new Product(1L, "Samsung Laptop", electronics, pc, 1500.0, seller2),
                 10.0);
-
         int choice;
         do {
             showMainMenu();
